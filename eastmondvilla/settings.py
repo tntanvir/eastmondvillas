@@ -31,6 +31,9 @@ SITE_URL = config("SITE_URL", default="http://localhost:8000")
 # Application definition
 
 INSTALLED_APPS = [
+    'unfold',
+    "unfold.contrib.filters",
+    "unfold.contrib.import_export",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -40,7 +43,11 @@ INSTALLED_APPS = [
     # rest  framework
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
+    'django.contrib.sites',
+
+
     # third party apps
     'dj_rest_auth',
     'dj_rest_auth.registration',
@@ -138,6 +145,7 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 
 
 
