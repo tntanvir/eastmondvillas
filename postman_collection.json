@@ -1,0 +1,176 @@
+{
+  "info": {
+    "_postman_id": "eastmondvilla-api-collection",
+    "name": "EastmondVilla API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Collection for common auth flows (register, login, refresh, user, logout) for the EastmondVilla Django backend. Uses environment variables: base_url, email, password, access_token, refresh_token."
+  },
+  "item": [
+    {
+      "name": "Register (dj-rest-auth)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password1\": \"{{password}}\",\n  \"password2\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/registration/",
+          "host": [
+            "{{base_url}}/api/registration/"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Login (dj-rest-auth)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Attempt to extract access and refresh tokens from different possible response shapes",
+              "const res = pm.response.json();",
+              "let access = res.access || res.access_token || res.token || res.accessToken || res.data && res.data.access;",
+              "let refresh = res.refresh || res.refresh_token || res.refreshToken || res.data && res.data.refresh;",
+              "// If vendor returns nested `tokens` object, try that too",
+              "if (!access && res.tokens) { access = res.tokens.access; refresh = refresh || res.tokens.refresh; }",
+              "if (access) { pm.environment.set('access_token', access); }",
+              "if (refresh) { pm.environment.set('refresh_token', refresh); }",
+              "pm.test('Login response has token (access) or token-like key', function () { pm.expect(!!access || !!refresh).to.be.true; });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/login/",
+          "host": ["{{base_url}}/api/auth/login/"]
+        }
+      },
+      "response": []
+    },
+    {
+  "name": "Refresh Token (dj-rest-auth/simplejwt) - /api/auth/token/refresh/",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();",
+              "const access = res.access || res.access_token || res.data && res.data.access;",
+              "if (access) { pm.environment.set('access_token', access); }",
+              "pm.test('Refresh returned access token', function () { pm.expect(!!access).to.be.true; });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/token/refresh/",
+          "host": ["{{base_url}}/api/auth/token/refresh/"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Current User (dj-rest-auth)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/auth/user/",
+          "host": ["{{base_url}}/api/auth/user/"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Logout (dj-rest-auth)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": { "mode": "raw", "raw": "{}" },
+        "url": {
+          "raw": "{{base_url}}/api/auth/logout/",
+          "host": ["{{base_url}}/api/auth/logout/"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// Clear tokens in environment after logout",
+              "pm.environment.unset('access_token');",
+              "pm.environment.unset('refresh_token');",
+              "pm.test('Logged out (status 200 or 204)', function () { pm.expect(pm.response.code).to.be.oneOf([200, 204]); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "response": []
+    },
+    {
+      "name": "Optional: Simple JWT Obtain (if present at /api/token/)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/auth/token/",
+          "host": ["{{base_url}}/api/auth/token/"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const res = pm.response.json();",
+              "if (res.access) pm.environment.set('access_token', res.access);",
+              "if (res.refresh) pm.environment.set('refresh_token', res.refresh);",
+              "pm.test('Token obtain returns access token', function () { pm.expect(!!res.access).to.be.true; });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "response": []
+    }
+  ]
+}
