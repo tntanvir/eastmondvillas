@@ -1,0 +1,133 @@
+Content
+
+Project Overview:..................................................................................................................1
+Deliverables:........................................................................................................................2-5
+Features List:.....................................................................................................................6-13
+Technology:............................................................................................................................14
+Price and Timeline:............................................................................................................15
+Payment by Milestones:................................................................................................16
+Flexibility and collaboration:..................................................................................17
+
+Project Overview
+
+This project involves developing a premium, secure, and
+user-friendly real estate platform with two key interfaces: an
+Admin Dashboard and an Agent Portal. The Admin side allows
+the super admin and content managers to create and manage
+property listings, upload media, assign properties to agents, and
+control access with robust role-based permissions. It also supports
+bulk uploads, SEO optimization, and secure audit logging. The
+Agent Portal is designed for ease of use, giving agents quick
+access to assigned properties, with features to copy descriptions,
+copy calendar links, and download images or complete marketing
+packs in one click.
+The system ensures smooth collaboration, fast content
+distribution, and a professional experience aligned with premium
+real estate standards.
+
+Deliverables
+
+1. Fully Functional Website:
+● Responsive front-end and back-end development.
+● Integration of third-party services as needed.
+
+2. Source Code for the Website:
+● Clean, well-documented code with version control for
+scalability.
+● Delivery of all project files.
+
+3. 90 Days of Free Maintenance:
+● Post-launch support for bug fixes, updates, and minor
+adjustments.
+● Ongoing assistance for smooth website performance within
+the 90-day period.
+
+VERY IMPORTANT
+
+Note: You have to provide me with the Logo, all
+required 3rd-party service APIs, and Hosting
+credentials
+
+Features List
+
+Admin Features
+
+Dashboard & Control
+➢ Overview of total properties, active listings, recent activity
+➢ Quick actions: create property, assign agent,
+publish/unpublish
+
+Property Management
+➢ Create, edit, delete properties
+➢ Upload photos, videos, and brochures
+➢ Add/edit property descriptions & details
+➢ Status workflow: Draft → Pending Review → Published →
+Archived
+➢ Bulk actions: publish/unpublish, assign agents, upload assets
+
+Agent Management
+➢ Create and manage agent accounts
+➢ Assign properties to agents (single or multiple)
+➢ Set permissions (view-only / download / full access)
+➢ Revoke or expire agent access
+
+Media & Content
+➢ Bulk upload images & videos (drag & drop)
+➢ Reorder, caption, alt-text, optimize images
+➢ Auto-generate downloadable brochures/marketing packs
+➢ Preview property page before publishing
+
+Security & Logs
+➢ Role-based access control (RBAC)
+➢ 2FA (optional for accounts)
+➢ Audit logs: track logins, downloads, edits, shares
+➢ Backup & restore
+
+Marketing & Integrations
+➢ Configure global calendar integration (Calendly, Google)
+➢ Add SEO meta tags (title, description, schema markup)
+➢ Export/import property data (CSV)
+➢ Share property pack via unique link
+
+User Features
+Dashboard
+➢ View assigned properties only
+➢ Search & filter properties
+
+Property Resources
+➢ Copy description (one-click copy text)
+➢ Copy calendar link (instant copy to clipboard)
+➢ Download images (single or full ZIP)
+➢ Download all property assets as ZIP (images, video,
+brochure, calendar link, description)
+➢ Download marketing pack (ready-to-use bundle for
+promotion)
+➢ View high-quality gallery & videos
+
+Collaboration
+➢ Request edits/extra assets from admin
+➢ Notifications for new property assignments or updates
+➢ Activity feed: new uploads, edits, calendar changes
+
+Sharing
+➢ Generate expiring share links (download/view-only)
+
+Account
+➢ Profile management (name, email, phone)
+➢ Password reset & secure login
+
+Technology Stack
+
+➔ Front-end development
+● Framework: React.js
+● Languages: JavaScript
+
+Back-End Development:
+➔ Server-Side Development:
+● Framework: Django
+● Database: PostgreSQL
+Testing and Deployment:
+➔ Quality Assurance Testing:
+● Comprehensive testing for performance and bug resolution.
+Deployment and Server Management:
+● Platform: AWS (Amazon Web Services) & Digital Ocean

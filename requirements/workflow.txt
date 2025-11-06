@@ -1,0 +1,316 @@
+🏡 Real Estate Platform — Full Website Operation Flow
+🌐 Overview
+
+This website has two main sections:
+
+Villas (For Rent) — customers can book villas for custom durations (days/weeks/months).
+
+Properties (For Sale) — customers can view, inquire, and purchase properties.
+
+It includes four user roles:
+
+Customer — public website visitor who can view, book, or buy properties.
+
+Agent — responsible for managing assigned villas/properties, communicating with clients.
+
+Manager — verifies listings, reviews bookings, approves requests, and coordinates with agents.
+
+Admin — owner/super admin who controls the entire system, users, data, and payments.
+
+🧭 SYSTEM WORKFLOW (End-to-End)
+1️⃣ Customer Workflow (Real-Life User Experience)
+🏠 Step 1: Visit Website
+
+Customer opens the website homepage.
+
+Sees featured villas and property listings.
+
+🔍 Step 2: Search & Filter
+
+Can filter by:
+
+Property type (villa / apartment / sale)
+
+Location
+
+Price range
+
+Bedroom count
+
+Amenities
+
+Availability dates
+
+🏡 Step 3: View Property Details
+
+Clicks a property card → Opens detailed page.
+
+Page includes:
+
+Description, amenities, rates (per day, per week, per month)
+
+Image & video gallery
+
+Calendar (showing available dates)
+
+Reviews (if available)
+
+“Book Now” or “Buy Property” button
+
+📅 Step 4: Booking (For Villas)
+
+Click “Book Now”
+
+Select check-in & check-out dates (custom number of days)
+
+View total price (calculated automatically)
+
+Fill personal details (name, phone, email)
+
+Optionally: add message or special request
+
+💳 Step 5: Booking Confirmation Request
+
+Customer clicks “Confirm Booking”
+
+The booking is sent to the backend system as a Pending Booking.
+
+Booking data includes:
+
+Customer info
+
+Villa ID
+
+Booking dates
+
+Total amount
+
+Status = “Pending”
+
+🕓 Step 6: Booking Review (By Admin/Manager)
+
+The customer sees a message:
+“Your booking request has been submitted. Our team will contact you soon.”
+
+📞 Step 7: Communication
+
+Admin or Manager receives the booking.
+
+Reviews availability → Contacts customer:
+
+By phone/email, or
+
+Sends a Google Calendar meeting link for virtual discussion.
+
+They can discuss details (stay duration, payment, etc.)
+
+✅ Step 8: Approval & Payment
+
+Admin/Manager approves the booking.
+
+Customer receives:
+
+Approval notification (email + dashboard)
+
+Invoice/payment link (if payment gateway integrated)
+
+Booking details + calendar event link
+
+🏡 Step 9: During Stay
+
+Booking is active.
+
+Customer can log in to see booking details, messages, and extensions.
+
+⭐ Step 10: Review
+
+After stay ends, customer gets option to:
+
+Rate the villa
+
+Write a review (visible on property page after approval)
+
+2️⃣ Customer Workflow (For Property Sale)
+🏘 Step 1: Browse “Properties for Sale”
+
+Customer navigates to “Buy Properties” section.
+
+Filters by price, size, and location.
+
+🏠 Step 2: View Details
+
+Clicks a listing → sees property info, price, legal details, media.
+
+💬 Step 3: Inquiry
+
+Click “Request to Buy”
+
+Fills contact form and interest message.
+
+🔁 Step 4: Admin/Manager Review
+
+The inquiry goes to backend dashboard.
+
+Admin/Manager assigns the Agent to follow up.
+
+📞 Step 5: Agent Contact
+
+Assigned agent contacts the client for property tour or online meeting (via Google Meet link).
+
+✅ Step 6: Deal Finalization
+
+Once both parties agree, manager/admin updates status:
+
+“In Negotiation” → “Sold”
+
+All documents & payments are handled offline or via secure portal.
+
+🧑‍💼 Admin Workflow
+
+Main Role:
+Supervise the entire system, manage users, properties, and approvals.
+
+Flow:
+
+Dashboard Overview
+
+Sees all properties, agents, and pending bookings/inquiries.
+
+Property Management
+
+Create, edit, delete properties (for rent/sale).
+
+Assign agents to listings.
+
+Manage pricing, status (Published/Draft/Sold).
+
+Booking Management
+
+View all booking requests.
+
+Approve or reject based on availability.
+
+Schedule meeting using Google Calendar API:
+
+Automatically adds event to both parties’ calendars.
+
+Sends confirmation email with join link.
+
+Customer & Agent Communication
+
+Directly message or call customers.
+
+Assign manager/agent to handle a case.
+
+Payment & Reports
+
+Approve payments (if integrated).
+
+View analytics: top properties, agents, revenue.
+
+Security & Logs
+
+Track who accessed or edited what.
+
+Manage user roles, 2FA, and backups.
+
+🧑‍💼 Manager Workflow
+
+Main Role:
+Middle layer between Admin and Agents — handles booking approvals, reviews, and content.
+
+Flow:
+
+View Pending Bookings
+
+Reviews each booking (dates, availability, customer details).
+
+Communicates with client for clarification if needed.
+
+Approves or rejects request.
+
+Agent Coordination
+
+Assigns booking to a specific agent.
+
+Monitors which agents are active or idle.
+
+Customer Meetings
+
+Uses Google Calendar API to create meetings.
+
+Invites client + assigned agent.
+
+Sends join link or confirmation email.
+
+Property Verification
+
+Reviews content uploaded by agents.
+
+Approves property listings before publishing.
+
+Reports & Analytics
+
+Generates weekly booking and performance reports for Admin.
+
+🧑‍💼 Agent Workflow
+
+Main Role:
+Promote assigned properties, handle clients, and manage property media.
+
+Flow:
+
+Dashboard
+
+Sees only assigned properties.
+
+Quick actions: view leads, upload media, share links.
+
+Property Actions
+
+Update photos, videos, descriptions.
+
+Generate marketing packs (PDF/ZIP).
+
+Share property with clients via expiring link.
+
+Customer Interaction
+
+When assigned booking → contacts customer.
+
+Schedules meeting via Google Calendar.
+
+Updates booking status (contacted, visited, confirmed).
+
+Feedback to Manager
+
+Sends notes on customer feedback or property issues.
+
+🔗 Integration & Automation Workflow
+System	Purpose
+Google Calendar API	Schedule meetings, villa stays, or property tours. Auto-sends email invites.
+Booking API (optional)	Used for time slot management, payment, or sync availability.
+Email Notifications	Auto send booking confirmations, approvals, reminders.
+SEO & Marketing Tools	Improve visibility of properties online.
+File Generator (Marketing Pack)	Auto-create brochure with description + media.
+RBAC (Role-Based Access Control)	Separate permissions for Admin, Manager, Agent, Customer.
+⚙️ Example Real-Life Booking Flow (Scenario)
+
+Customer: Visits website → Filters villas → Books “Ocean View Villa” for 5 days.
+
+System: Stores booking → Notifies Admin/Manager (status: Pending).
+
+Manager: Reviews → Confirms availability → Approves → Creates Google Calendar event.
+
+Customer & Agent: Receive event invite + confirmation email.
+
+Agent: Contacts customer for check-in and further discussion.
+
+Stay Completed → Customer gives review → Admin approves review → Appears on site.
+
+🧩 Summary of Role Responsibilities
+Role	Responsibilities	Example Actions
+Customer	Browse, book, buy, review	Search villas → Book → Review
+Agent	Handle assigned properties, talk to clients	Share listings → Schedule meetings
+Manager	Approve bookings, verify listings	Review booking → Approve → Assign agent
+Admin	Full system control	Create listings, manage roles, reports, payments
