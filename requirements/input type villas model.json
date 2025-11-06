@@ -1,0 +1,50 @@
+{
+  "title": "Ratione recusandae",
+  "description": "Voluptatibus aliquip",
+  "price": "22",
+  "property_type": "condo",
+  "add_guest": "91",
+  "address": "Quis provident comm",
+  "bathrooms": "93",
+  "bedrooms": "33",
+  "bedrooms_images": [
+    {
+      "url": "image1.jpg"
+    },
+    {
+      "url": "image2.jpg"
+    }
+  ],
+  "booking_rate_start": "Nisi numquam a dolor, Sed dicta saepe cons, dicta saepe cons",
+  "calendar_link": "https://www.jexyhekiqolabe.ws",
+  "check_in": "Veniam ad modi temp",
+  "check_out": "Cupidatat sint exerc",
+  "city": "Nihil ex adipisicing",
+  "interior_amenities": ["Et dolorem veniam s"],
+  "outdoor_amenities": ["Laborum asperiores d"],
+  "pool": "95",
+  "rules_and_etiquette": ["Eos dignissimos inv", "hello", "hi"],
+  "seo_description": "Amet id sit volupta",
+  "seo_title": "Magni mollit ipsa a",
+  "signature_distinctions": ["Eum vel ducimus sun", "hello", "hio"],
+  "staff_details": ["Sed dicta saepe cons", "dicta saepe cons", "Sed dicta saepe cons"],
+  "staff_name": ["Sophia Roth", "juyel", "roni"],
+  "status": "Published",
+  "media_images": [
+    {
+      "url": "image1.jpg"
+    },
+    {
+      "url": "image2.jpg"
+    },
+    {
+      "url": "image3.jpg"
+    }
+  ],
+  "location": {
+    "lat": 25.79968273487285,
+    "lng": -80.19282806396482,
+    "address": "Juyel",
+    "description": "Juyel Rana"
+  }
+}

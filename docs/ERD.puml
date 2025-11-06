@@ -1,0 +1,95 @@
+@startuml
+' PlantUML ERD for Eastmond Villas (MVP schema)
+hide circle
+entity "users" as users {
+  * id : integer <<PK>>
+  --
+  email : varchar
+  name : varchar
+  role : varchar
+  permission : varchar
+  phone : varchar
+  address : text
+  date_joined : datetime
+  is_verified : boolean
+}
+
+entity "villas" as villas {
+  * id : integer <<PK>>
+  --
+  title : varchar
+  description : text
+  price : decimal
+  bedrooms : integer
+  bathrooms : integer
+  pool : boolean
+  city : varchar
+  address : text
+  latitude : float
+  longitude : float
+  villa_name : varchar
+  status : varchar
+  owner_id : integer <<FK>>
+}
+
+entity "villa_images" as villa_images {
+  * id : integer <<PK>>
+  --
+  villa_id : integer <<FK>>
+  file : varchar
+  caption : varchar
+  is_primary : boolean
+}
+
+entity "booking_rates" as booking_rates {
+  * id : integer <<PK>>
+  --
+  villa_id : integer <<FK>>
+  period : varchar
+  minimum_stay : integer
+  rate_per_night : decimal
+}
+
+entity "bookings" as bookings {
+  * id : integer <<PK>>
+  --
+  villa_id : integer <<FK>>
+  user_id : integer <<FK>>
+  full_name : varchar
+  email : varchar
+  check_in : date
+  check_out : date
+  status : varchar
+  total_price : decimal
+  google_event_id : varchar
+  created_at : datetime
+}
+
+entity "payments" as payments {
+  * id : integer <<PK>>
+  --
+  booking_id : integer <<FK>>
+  amount : decimal
+  provider : varchar
+  status : varchar
+  paid_at : datetime
+}
+
+entity "calendar_events" as calendar_events {
+  * id : integer <<PK>>
+  --
+  booking_id : integer <<FK>>
+  google_event_id : varchar
+  start_time : datetime
+  end_time : datetime
+  created_by : varchar
+}
+
+villas ||--o{ villa_images : "has"
+villas ||--o{ booking_rates : "has"
+villas ||--o{ bookings : "receives"
+users ||--o{ bookings : "makes"
+bookings ||--o{ payments : "has"
+bookings ||--o{ calendar_events : "maps_to"
+
+@enduml

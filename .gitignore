@@ -142,3 +142,8 @@ yarn-error.log*
 __pypackages__/
 *.bak
 *.tmp
+
+
+.todo.md 
+# Ignore TODO.md if it contains sensitive info  
+TODO.md
