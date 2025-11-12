@@ -1,0 +1,882 @@
+{
+  "info": {
+    "name": "Accounts API Collection",
+    "description": "Complete API collection for the accounts app including registration, authentication, user management, and admin operations.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "accounts-api-v1"
+  },
+  "item": [
+    {
+      "name": "1. Authentication & Registration",
+      "item": [
+        {
+          "name": "Register New User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has user data', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('pk');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData).to.have.property('is_active');",
+                  "    ",
+                  "    // Store user info for later use",
+                  "    pm.environment.set('user_id', jsonData.pk);",
+                  "    pm.environment.set('user_email', jsonData.email);",
+                  "});",
+                  "",
+                  "pm.test('User is active', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.is_active).to.be.true;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{test_user_email}}\",\n  \"name\": \"Test User\",\n  \"phone\": \"+15551234567\",\n  \"password1\": \"{{test_user_password}}\",\n  \"password2\": \"{{test_user_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/registration/",
+              "host": ["{{base_url}}"],
+              "path": ["registration", ""]
+            },
+            "description": "Register a new user account. Role will be 'customer' by default with 'only_view' permission."
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains access and refresh tokens', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('access');",
+                  "    pm.expect(jsonData).to.have.property('refresh');",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "    ",
+                  "    // Store tokens in environment",
+                  "    pm.environment.set('access_token', jsonData.access);",
+                  "    pm.environment.set('refresh_token', jsonData.refresh);",
+                  "    ",
+                  "    // Store user info",
+                  "    pm.environment.set('user_id', jsonData.user.id);",
+                  "    pm.environment.set('user_email', jsonData.user.email);",
+                  "});",
+                  "",
+                  "pm.test('Access token is valid JWT', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.access).to.match(/^eyJ[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]+\\.[A-Za-z0-9-_]*$/);",
+                  "});",
+                  "",
+                  "pm.test('User object contains required fields', function () {",
+                  "    var user = pm.response.json().user;",
+                  "    pm.expect(user).to.have.property('email');",
+                  "    pm.expect(user).to.have.property('name');",
+                  "    pm.expect(user).to.have.property('role');",
+                  "    pm.expect(user).to.have.property('permission');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{test_user_email}}\",\n  \"password\": \"{{test_user_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login", ""]
+            },
+            "description": "Authenticate user and receive JWT access and refresh tokens."
+          },
+          "response": []
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Admin login successful', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('access');",
+                  "    pm.expect(jsonData).to.have.property('refresh');",
+                  "    ",
+                  "    // Store admin tokens",
+                  "    pm.environment.set('access_token', jsonData.access);",
+                  "    pm.environment.set('refresh_token', jsonData.refresh);",
+                  "});",
+                  "",
+                  "pm.test('User has admin role', function () {",
+                  "    var user = pm.response.json().user;",
+                  "    pm.expect(user.role).to.equal('admin');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{admin_email}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login", ""]
+            },
+            "description": "Login as admin to access admin-only endpoints."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains user details', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "    pm.expect(jsonData).to.have.property('role');",
+                  "    pm.expect(jsonData).to.have.property('permission');",
+                  "    pm.expect(jsonData).to.have.property('is_active');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/user/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "user", ""]
+            },
+            "description": "Get details of the currently authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Logout successful', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.detail).to.include('logged out');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/logout/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "logout", ""]
+            },
+            "description": "Logout user and blacklist refresh token."
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints for user registration, login, logout, and authentication."
+    },
+    {
+      "name": "2. Password Management",
+      "item": [
+        {
+          "name": "Change Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Password changed successfully', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.detail).to.include('password');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"old_password\": \"{{test_user_password}}\",\n  \"new_password1\": \"NewTestPass456!\",\n  \"new_password2\": \"NewTestPass456!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/password/change/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "password", "change", ""]
+            },
+            "description": "Change password for the authenticated user."
+          },
+          "response": []
+        },
+        {
+          "name": "Request Password Reset",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Reset email sent', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.detail).to.include('reset');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{test_user_email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/password/reset/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "password", "reset", ""]
+            },
+            "description": "Request a password reset email."
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Password Reset",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"<uid_from_email>\",\n  \"token\": \"<token_from_email>\",\n  \"new_password1\": \"ResetPass123!\",\n  \"new_password2\": \"ResetPass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/password/reset/confirm/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "password", "reset", "confirm", ""]
+            },
+            "description": "Confirm password reset with uid and token from email."
+          },
+          "response": []
+        }
+      ],
+      "description": "Endpoints for password change and reset."
+    },
+    {
+      "name": "3. Email Verification",
+      "item": [
+        {
+          "name": "Verify Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"key\": \"<email_confirmation_key>\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/registration/verify-email/",
+              "host": ["{{base_url}}"],
+              "path": ["registration", "verify-email", ""]
+            },
+            "description": "Verify email address using confirmation key from email."
+          },
+          "response": []
+        }
+      ],
+      "description": "Email verification endpoint."
+    },
+    {
+      "name": "4. Admin - User Management",
+      "item": [
+        {
+          "name": "List All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "pm.test('Users have required fields', function () {",
+                  "    var users = pm.response.json();",
+                  "    if (users.length > 0) {",
+                  "        pm.expect(users[0]).to.have.property('id');",
+                  "        pm.expect(users[0]).to.have.property('email');",
+                  "        pm.expect(users[0]).to.have.property('name');",
+                  "        pm.expect(users[0]).to.have.property('role');",
+                  "        pm.expect(users[0]).to.have.property('permission');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", ""]
+            },
+            "description": "List all users (admin/staff only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Create User (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201 Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('User created with correct role', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData.role).to.equal('agent');",
+                  "    pm.expect(jsonData.permission).to.equal('download');",
+                  "    ",
+                  "    // Store created user ID for later use",
+                  "    pm.environment.set('created_user_id', jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agent@example.com\",\n  \"name\": \"Agent User\",\n  \"phone\": \"+15559998888\",\n  \"role\": \"agent\",\n  \"permission\": \"download\",\n  \"password\": \"AgentPass123!\",\n  \"address\": \"Regional Office\",\n  \"is_active\": true,\n  \"is_staff\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", ""]
+            },
+            "description": "Create a new user with specific role and permissions (admin/staff only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Details",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User details retrieved', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('role');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{created_user_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{created_user_id}}", ""]
+            },
+            "description": "Get details of a specific user (admin/staff only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User updated successfully', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.role).to.equal('manager');",
+                  "    pm.expect(jsonData.permission).to.equal('full_access');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agent@example.com\",\n  \"name\": \"Agent User Updated\",\n  \"phone\": \"+15559998888\",\n  \"role\": \"manager\",\n  \"permission\": \"full_access\",\n  \"address\": \"Main Office\",\n  \"is_active\": true,\n  \"is_staff\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{created_user_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{created_user_id}}", ""]
+            },
+            "description": "Update user details including role and permissions (admin/staff only)."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});",
+                  "",
+                  "pm.test('Response body is empty', function () {",
+                  "    pm.expect(pm.response.text()).to.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/{{created_user_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", "{{created_user_id}}", ""]
+            },
+            "description": "Delete a user (admin/staff only)."
+          },
+          "response": []
+        }
+      ],
+      "description": "Admin-only endpoints for managing users (CRUD operations)."
+    },
+    {
+      "name": "5. Account Management",
+      "item": [
+        {
+          "name": "Delete Own Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 204 No Content', function () {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/users/{{user_id}}/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "users", "{{user_id}}", ""]
+            },
+            "description": "Delete own account. Users can only delete their own account unless they are admin/staff."
+          },
+          "response": []
+        }
+      ],
+      "description": "User account management endpoints."
+    },
+    {
+      "name": "6. Error Examples",
+      "item": [
+        {
+          "name": "401 - Unauthorized (No Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Error message present', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('detail');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/user/",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "user", ""]
+            },
+            "description": "Example of 401 error when authentication is missing."
+          },
+          "response": []
+        },
+        {
+          "name": "403 - Forbidden (Non-Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 403 Forbidden', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});",
+                  "",
+                  "pm.test('Permission denied message', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.detail).to.include('permission');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{access_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/users/",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "users", ""]
+            },
+            "description": "Example of 403 error when non-admin tries to access admin endpoint. Run this after logging in as a regular user."
+          },
+          "response": []
+        },
+        {
+          "name": "400 - Bad Request (Validation Error)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400 Bad Request', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation errors present', function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('object');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid-email\",\n  \"password1\": \"123\",\n  \"password2\": \"456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/registration/",
+              "host": ["{{base_url}}"],
+              "path": ["registration", ""]
+            },
+            "description": "Example of 400 error with validation failures."
+          },
+          "response": []
+        }
+      ],
+      "description": "Examples of different error responses."
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "type": "string"
+    }
+  ]
+}

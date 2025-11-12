@@ -1,0 +1,69 @@
+{
+  "id": "accounts-env-v1",
+  "name": "Accounts API Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "user_email",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "admin_email",
+      "value": "admin@example.com",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "admin_password",
+      "value": "AdminPass123!",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "test_user_email",
+      "value": "testuser@example.com",
+      "enabled": true,
+      "type": "default"
+    },
+    {
+      "key": "test_user_password",
+      "value": "TestPass123!",
+      "enabled": true,
+      "type": "secret"
+    },
+    {
+      "key": "created_user_id",
+      "value": "",
+      "enabled": true,
+      "type": "default"
+    }
+  ],
+  "_postman_variable_scope": "environment",
+  "_postman_exported_at": "2025-11-12T10:00:00.000Z",
+  "_postman_exported_using": "Postman/10.0.0"
+}
