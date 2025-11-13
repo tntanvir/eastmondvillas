@@ -1,6 +1,17 @@
 from rest_framework.permissions import BasePermission, SAFE_METHODS
 
 
+
+class IsAdmin(BasePermission):
+    """
+    Custom permission to only allow users with 'admin' role to access the view.
+    Assumes the User model has a 'role' attribute.
+    """
+
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and getattr(request.user, 'role', None) == 'admin'
+
+
 class IsAdminOrManager(BasePermission):
     """
     Custom permission to only allow users with 'admin' or 'manager' roles to edit objects.
