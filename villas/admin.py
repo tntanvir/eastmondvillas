@@ -69,8 +69,6 @@ class PropertyAdmin(ModelAdmin):
         'slug',
     )
     
-    prepopulated_fields = {'slug': ('title',)}
-    
     readonly_fields = (
         'created_at',
         'updated_at',
@@ -83,7 +81,6 @@ class PropertyAdmin(ModelAdmin):
         ('Basic Information', {
             'fields': (
                 'title',
-                'slug',
                 'description',
                 'listing_type',
                 'status',
@@ -115,6 +112,7 @@ class PropertyAdmin(ModelAdmin):
         }),
         ('SEO & Marketing', {
             'fields': (
+                'slug',
                 'seo_title',
                 'seo_description',
                 'signature_distinctions',
@@ -293,7 +291,7 @@ class BookingAdmin(ModelAdmin):
         'check_in',
         'check_out',
         'duration',
-        'status_badge',
+        'status',
         'total_price',
         'created_at',
     )
