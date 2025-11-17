@@ -59,6 +59,9 @@ class Property(models.Model):
     staff = models.JSONField(blank=True, null=True, help_text="List of staff details in JSON format, e.g., [{'role': 'chef', 'name': 'John Doe'}]")
     calendar_link = models.URLField(blank=True, null=True, help_text="Link to external booking calendar (e.g., Google Calendar)")
 
+    # google  
+    google_calendar_id = models.CharField(max_length=255, blank=True, null=True, help_text="The ID of the Google Calendar for this property.")
+
 
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
