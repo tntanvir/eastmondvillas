@@ -114,6 +114,48 @@ class BookingViewSet(viewsets.ModelViewSet):
         else: # list action
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
+    
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user, status=Booking.StatusType.PENDING)
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    def update(self, request, *args, **kwargs):
+        booking = self.get_object()
+        new_status = request.data.get('status')
+        if new_status and new_status != booking.status:
+            if new_status == 'approved':
+                try:
+                    event_id = google_calendar_service.create_event_for_booking(booking.property.google_calendar_id, booking)
+                    booking.google_event_id = event_id
+                except Exception as e:
+                    return Response({"error": f"Failed to create Google Calendar event: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            elif new_status in ['cancelled', 'rejected'] and booking.google_event_id:
+                google_calendar_service.delete_event_for_booking(booking.property.google_calendar_id, booking.google_event_id)
+                booking.google_event_id = None
+        
+        booking.save() 
+        
+        return super().update(request, *args, **kwargs)
+    
+
+    def destroy(self, request, *args, **kwargs):
+        booking = self.get_object()
+        
+        if booking.google_event_id:
+            google_calendar_service.delete_event_for_booking(
+                booking.property.google_calendar_id, 
+                booking.google_event_id
+            )
+        
+        self.perform_destroy(booking)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
         
 
 
