@@ -5,6 +5,8 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from .services import google_calendar_service
+
 
 from .models import Property, Media
 from .serializers import PropertySerializer 
@@ -46,7 +48,13 @@ class PropertyViewSet(viewsets.ModelViewSet):
         return super().get_permissions()
     
     def perform_create(self, serializer):
-        serializer.save(created_by=self.request.user)
+        property_instance = serializer.save(created_by=self.request.user)
+        try:
+            calendar_id = google_calendar_service.create_calendar_for_property(property_instance)
+            property_instance.google_calendar_id = calendar_id
+            property_instance.save()
+        except Exception as e:
+            print(f"Could not create Google Calendar for {property_instance.title}: {e}")
 
     def create(self, request, *args, **kwargs):
         try:
