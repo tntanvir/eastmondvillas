@@ -182,7 +182,7 @@ def get_property_availability(request, property_pk):
     try:
         events_result = google_calendar_service.service.events().list(
             calendarId=prop.google_calendar_id,
-            timeMin=start_of_month.isoformat() + 'Z', # 'Z' মানে UTC
+            timeMin=start_of_month.isoformat() + 'Z',
             timeMax=end_of_month.isoformat() + 'Z',
             singleEvents=True, 
             orderBy='startTime'
