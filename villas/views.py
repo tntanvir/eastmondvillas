@@ -8,11 +8,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from . import google_calendar_service
 
 
-from .models import Property, Media
-from .serializers import PropertySerializer 
+from .models import Property, Media, Booking
+from .serializers import PropertySerializer , BookingSerializer
 
 
-from accounts.permissions import IsAdminOrManager, IsAgentWithFullAccess, IsAssignedAgentReadOnly
+from accounts.permissions import IsAdminOrManager, IsAgentWithFullAccess, IsAssignedAgentReadOnly, IsOwnerOrAdminOrManager
 
 class PropertyViewSet(viewsets.ModelViewSet):
 
@@ -95,5 +95,26 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
 class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = BookingSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if not user.is_authenticated:
+            return Booking.objects.none()
+        if user.role in ['admin', 'manager']:
+            return Booking.objects.all().select_related('property', 'user')
+        return Booking.objects.filter(user=user).select_related('property', 'user')
+    
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = [IsAuthenticated]
+        elif self.action == 'retrieve':
+            permission_classes = [IsOwnerOrAdminOrManager]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            permission_classes = [IsAdminOrManager]
+        else: # list action
+            permission_classes = [IsAuthenticated]
+        return [permission() for permission in permission_classes]
+        
+
 
 
