@@ -1,852 +1,116 @@
 {
   "info": {
-    "name": "Eastmond Villa - Complete API",
-    "description": "Complete Postman collection for Eastmond Villa API including authentication, user management, properties, bookings, and media endpoints. Supports all user roles: admin, manager, agent, and customer.",
+    "name": "Eastmond Villa API",
+    "description": "Correct Postman collection: valid JSON; real endpoints only (auth, admin users, properties, bookings, availability). Media handled only via property creation.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_postman_id": "eastmondvilla-complete-api",
-    "version": "2.0.0"
+    "version": "2.1.0"
   },
   "auth": {
     "type": "bearer",
     "bearer": [
-      {
-        "key": "token",
-        "value": "{{access_token}}",
-        "type": "string"
-      }
+      {"key": "token", "value": "{{access_token}}", "type": "string"}
     ]
   },
   "item": [
     {
-      "name": "🔐 Authentication (Corrected Paths)",
+      "name": "🔐 Authentication",
       "item": [
         {
           "name": "Register New User",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('new_user_id', jsonData.pk);",
-                  "    pm.environment.set('new_user_email', jsonData.email);",
-                  "    pm.test('✅ User registered successfully', () => {",
-                  "        pm.expect(jsonData).to.have.property('pk');",
-                  "        pm.expect(jsonData.email).to.exist;",
-                  "    });",
-                  "    console.log('New user created with ID:', jsonData.pk);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
-            "auth": {
-              "type": "noauth"
-            },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"name\": \"New Customer\",\n  \"phone\": \"+1234567890\",\n  \"password1\": \"SecurePass123!\",\n  \"password2\": \"SecurePass123!\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/registration/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "registration", ""]
-            },
-            "description": "Register a new user. Default role is 'customer' with 'only_view' permission."
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"name\": \"New Customer\",\n  \"phone\": \"+1234567890\",\n  \"password1\": \"SecurePass123!\",\n  \"password2\": \"SecurePass123!\"\n}"},
+            "url": {"raw": "{{base_url}}/api/registration/", "host": ["{{base_url}}"], "path": ["api","registration",""]},
+            "description": "Register a new user (default role customer)."
           }
         },
         {
           "name": "Login",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('access_token', jsonData.access);",
-                  "    pm.environment.set('refresh_token', jsonData.refresh);",
-                  "    if (jsonData.user) {",
-                  "        pm.environment.set('user_id', jsonData.user.pk || jsonData.user.id);",
-                  "        pm.environment.set('user_email', jsonData.user.email);",
-                  "        pm.environment.set('user_role', jsonData.user.role);",
-                  "        pm.environment.set('user_permission', jsonData.user.permission);",
-                  "    }",
-                  "    pm.test('✅ Login successful', () => {",
-                  "        pm.expect(jsonData.access).to.exist;",
-                  "        pm.expect(jsonData.refresh).to.exist;",
-                  "    });",
-                  "    console.log('🔑 Logged in as:', jsonData.user.email, '| Role:', jsonData.user.role);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
-            "auth": {
-              "type": "noauth"
-            },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"{{current_user_email}}\",\n  \"password\": \"{{current_user_password}}\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/login/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "login", ""]
-            },
-            "description": "Login with any user role. Access token is automatically saved and used for subsequent requests."
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"email\": \"{{current_user_email}}\",\n  \"password\": \"{{current_user_password}}\"\n}"},
+            "url": {"raw": "{{base_url}}/api/auth/login/", "host": ["{{base_url}}"], "path": ["api","auth","login",""]},
+            "description": "Login and obtain tokens."
           }
         },
-        {
-          "name": "Get Current User",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/auth/user/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "user", ""]
-            },
-            "description": "Get details of the currently authenticated user."
-          }
-        },
+        {"name": "Get Current User", "request": {"method": "GET", "url": {"raw": "{{base_url}}/api/auth/user/", "host": ["{{base_url}}"], "path": ["api","auth","user",""]}, "description": "Fetch authenticated user."}},
         {
           "name": "Refresh Token",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('access_token', jsonData.access);",
-                  "    pm.test('✅ Token refreshed', () => pm.expect(jsonData.access).to.exist);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
-            "auth": {
-              "type": "noauth"
-            },
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/token/refresh/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "token", "refresh", ""]
-            }
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"},
+            "url": {"raw": "{{base_url}}/api/auth/token/refresh/", "host": ["{{base_url}}"], "path": ["api","auth","token","refresh",""]}
           }
         },
         {
           "name": "Logout",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.environment.unset('access_token');",
-                  "pm.environment.unset('refresh_token');",
-                  "console.log('🔓 Logged out successfully');"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/auth/logout/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "logout", ""]
-            }
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{}"},
+            "url": {"raw": "{{base_url}}/api/auth/logout/", "host": ["{{base_url}}"], "path": ["api","auth","logout",""]},
+            "description": "Invalidate tokens (server-side if supported)."
           }
         }
       ]
     },
     {
-      "name": "👑 Admin - User Management",
-      "description": "Admin only endpoints for managing users",
+      "name": "👑 Admin Users",
       "item": [
-        {
-          "name": "List All Users",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.results && jsonData.results.length > 0) {",
-                  "        pm.environment.set('target_user_id', jsonData.results[0].id);",
-                  "        console.log('Found', jsonData.count, 'users');",
-                  "    }",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/admin/users/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "admin", "users", ""]
-            },
-            "description": "List all users in the system. Admin only."
-          }
-        },
-        {
-          "name": "Get User Details",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/admin/users/{{target_user_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "admin", "users", "{{target_user_id}}", ""]
-            },
-            "description": "Get details of a specific user. Admin only."
-          }
-        },
-        {
-          "name": "Create User (Admin)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('target_user_id', jsonData.id);",
-                  "    pm.test('✅ User created', () => pm.expect(jsonData.id).to.exist);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"newmanager@example.com\",\n  \"name\": \"New Manager\",\n  \"password\": \"ManagerPass123!\",\n  \"role\": \"manager\",\n  \"permission\": \"full_access\",\n  \"is_active\": true\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/admin/users/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "admin", "users", ""]
-            },
-            "description": "Create a new user with specific role and permissions. Admin only."
-          }
-        },
-        {
-          "name": "Update User (Admin)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"role\": \"agent\",\n  \"permission\": \"read_write\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/admin/users/{{target_user_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "admin", "users", "{{target_user_id}}", ""]
-            },
-            "description": "Update user role and permissions. Admin only."
-          }
-        },
-        {
-          "name": "Delete User (Admin)",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/auth/users/{{target_user_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "users", "{{target_user_id}}", ""]
-            },
-            "description": "Permanently delete a user. Admin only."
-          }
-        }
+        {"name": "List Users", "request": {"method": "GET", "url": {"raw": "{{base_url}}/api/admin/users/", "host": ["{{base_url}}"], "path": ["api","admin","users",""]}}},
+        {"name": "Create User", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"email\": \"manager@example.com\",\n  \"name\": \"Manager\",\n  \"password\": \"ManagerPass123!\",\n  \"role\": \"manager\",\n  \"permission\": \"full_access\",\n  \"is_active\": true\n}"}, "url": {"raw": "{{base_url}}/api/admin/users/", "host": ["{{base_url}}"], "path": ["api","admin","users",""]}}},
+        {"name": "Get User", "request": {"method": "GET", "url": {"raw": "{{base_url}}/api/admin/users/{{target_user_id}}/", "host": ["{{base_url}}"], "path": ["api","admin","users","{{target_user_id}}",""]}}},
+        {"name": "Update User", "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"role\": \"agent\",\n  \"permission\": \"read_write\"\n}"}, "url": {"raw": "{{base_url}}/api/admin/users/{{target_user_id}}/", "host": ["{{base_url}}"], "path": ["api","admin","users","{{target_user_id}}",""]}}},
+        {"name": "Delete User", "request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/admin/users/{{target_user_id}}/", "host": ["{{base_url}}"], "path": ["api","admin","users","{{target_user_id}}",""]}}}
       ]
     },
     {
       "name": "🏡 Properties",
       "item": [
-        {
-          "name": "List All Properties",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('✅ Status is 200', () => pm.response.to.have.status(200));",
-                  "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.results && jsonData.results.length > 0) {",
-                  "        pm.environment.set('property_id', jsonData.results[0].id);",
-                  "        pm.environment.set('property_slug', jsonData.results[0].slug);",
-                  "        console.log('🏠 Found', jsonData.count, 'properties');",
-                  "        console.log('Property ID saved:', jsonData.results[0].id);",
-                  "    }",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/?ordering=-created_at",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", ""],
-              "query": [
-                {
-                  "key": "ordering",
-                  "value": "-created_at",
-                  "description": "Sort by newest first"
-                },
-                {
-                  "key": "city",
-                  "value": "",
-                  "disabled": true
-                },
-                {
-                  "key": "min_price",
-                  "value": "",
-                  "disabled": true
-                },
-                {
-                  "key": "max_price",
-                  "value": "",
-                  "disabled": true
-                },
-                {
-                  "key": "bedrooms",
-                  "value": "",
-                  "disabled": true
-                },
-                {
-                  "key": "max_guests",
-                  "value": "",
-                  "disabled": true
-                }
-              ]
-            },
-            "description": "List published properties (public). Admin/manager see all internally (handled by backend)."
-          }
-        },
-        {
-          "name": "Search Properties",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/?city=Miami&min_price=100&max_price=1000&bedrooms=3",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", ""],
-              "query": [
-                {
-                  "key": "city",
-                  "value": "Miami"
-                },
-                {
-                  "key": "min_price",
-                  "value": "100"
-                },
-                {
-                  "key": "max_price",
-                  "value": "1000"
-                },
-                {
-                  "key": "bedrooms",
-                  "value": "3"
-                }
-              ]
-            },
-            "description": "Filter published properties (public)."
-          }
-        },
-        {
-          "name": "Get Property Details",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/{{property_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", "{{property_id}}", ""]
-            },
-            "description": "Get property details. Media included inline."
-          }
-        },
-        {
-          "name": "Create Property (Multipart)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('property_id', jsonData.id);",
-                  "    pm.environment.set('property_slug', jsonData.slug);",
-                  "    pm.test('✅ Property created', () => pm.expect(jsonData.id).to.exist);",
-                  "    console.log('🏠 Property created with ID:', jsonData.id);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {"key": "title", "value": "Luxury Beach Villa", "type": "text"},
-                {"key": "description", "value": "Ocean view villa", "type": "text"},
-                {"key": "price", "value": "750.00", "type": "text"},
-                {"key": "listing_type", "value": "rent", "type": "text"},
-                {"key": "status", "value": "draft", "type": "text"},
-                {"key": "max_guests", "value": "10", "type": "text"},
-                {"key": "bedrooms", "value": "5", "type": "text"},
-                {"key": "bathrooms", "value": "4", "type": "text"},
-                {"key": "pool", "value": "1", "type": "text"},
-                {"key": "amenities", "value": "{\"wifi\": true, \"pool\": \"private\"}", "type": "text"},
-                {"key": "latitude", "value": "25.790700", "type": "text"},
-                {"key": "longitude", "value": "-80.130000", "type": "text"},
-                {"key": "media_files", "type": "file", "src": []},
-                {"key": "media_metadata", "value": "{\"category\":\"media\",\"caption\":\"Main View\",\"is_primary\":true,\"order\":0}", "type": "text"}
-              ]
-            },
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", ""]
-            },
-            "description": "Create property (admin/manager). Multipart allows media upload."
-          }
-        },
-        {
-          "name": "Update Property",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"base_price\": \"800.00\",\n  \"is_featured\": true,\n  \"description\": \"Updated description with new amenities\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/{{property_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", "{{property_id}}", ""]
-            },
-            "description": "Update property details. Requires appropriate permissions."
-          }
-        },
-        {
-          "name": "Delete Property",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/{{property_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", "{{property_id}}", ""]
-            },
-            "description": "Delete a property. Admin only."
-          }
-        },
-        {
-          "name": "Get Property Media",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/{{property_id}}/media/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", "{{property_id}}", "media", ""]
-            },
-            "description": "Get all media (images, videos, virtual tours) for a property."
-          }
-        },
-        {
-          "name": "Check Availability",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/{{property_id}}/availability/?check_in=2025-12-01&check_out=2025-12-07",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", "{{property_id}}", "availability", ""],
-              "query": [
-                {
-                  "key": "check_in",
-                  "value": "2025-12-01",
-                  "description": "Check-in date (YYYY-MM-DD)"
-                },
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"price\": \"800.00\",\n  \"status\": \"published\"\n}"
-                },
-                }
-              ]
-            },
-            "description": "Check if a property is available for specific dates and get pricing information."
-          }
-        }
-      ]
-    },
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-                "url": {
-                  "raw": "{{base_url}}/api/villas/properties/{{property_id}}/availability/?month=12&year=2025",
-                  "host": ["{{base_url}}"],
-                  "path": ["api", "villas", "properties", "{{property_id}}", "availability", ""],
-                  "query": [
-                    {"key": "month", "value": "12"},
-                    {"key": "year", "value": "2025"}
-                  ]
-                },
-                "description": "Get booked date ranges for the month from Google Calendar."
-            },
-            "description": "List bookings. Admin/manager see all; regular user sees own."
-          }
-        },
-        {
-          "name": "Create Booking",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('booking_id', jsonData.id);",
-                  "    pm.test('✅ Booking created', () => {",
-                  "        pm.expect(jsonData.id).to.exist;",
-                  "        pm.expect(jsonData.status).to.eql('pending');",
-                  "    });",
-                  "    console.log('📅 Booking created with ID:', jsonData.id);",
-                  "    console.log('Total price:', jsonData.total_price);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"property\": {{property_id}},\n  \"full_name\": \"John Guest\",\n  \"email\": \"guest@example.com\",\n  \"phone\": \"+1234567890\",\n  \"check_in\": \"2025-12-15\",\n  \"check_out\": \"2025-12-22\",\n  \"total_price\": \"5250.00\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/villas/bookings/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "bookings", ""]
-            },
-            "description": "Create booking (status auto 'pending')."
-          }
-        },
-        {
-          "name": "Get Booking Details",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/villas/bookings/{{booking_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "bookings", "{{booking_id}}", ""]
-            },
-            "description": "Get detailed information about a specific booking."
-          }
-        },
-        {
-          "name": "Update Booking",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"guests\": 6,\n  \"special_requests\": \"Updated: Need 2 baby cribs and wheelchair access\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/villas/bookings/{{booking_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "bookings", "{{booking_id}}", ""]
-            },
-            "description": "Update booking details. Users can update their own bookings."
-          }
-        },
-        {
-          "name": "Update Booking Status (Admin/Manager)",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"confirmed\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/villas/bookings/{{booking_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "bookings", "{{booking_id}}", ""]
-            },
-            "description": "Update booking status. Status options: pending, confirmed, cancelled, completed. Requires admin/manager permissions."
-          }
-        },
-        {
-          "name": "Cancel Booking",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"cancelled\"\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/villas/bookings/{{booking_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "bookings", "{{booking_id}}", ""]
-            },
-            "description": "Cancel a booking by setting status to cancelled."
-          }
-        },
-        {
-          "name": "Delete Booking (Admin)",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/villas/bookings/{{booking_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "bookings", "{{booking_id}}", ""]
-            },
-            "description": "Permanently delete a booking. Admin only."
-          }
-        }
+        {"name": "List Properties", "request": {"method": "GET", "url": {"raw": "{{base_url}}/api/villas/properties/?ordering=-created_at", "host": ["{{base_url}}"], "path": ["api","villas","properties",""]}}},
+        {"name": "Search Properties", "request": {"method": "GET", "url": {"raw": "{{base_url}}/api/villas/properties/?city=Miami&min_price=100&max_price=1000", "host": ["{{base_url}}"], "path": ["api","villas","properties",""]}}},
+        {"name": "Get Property", "request": {"method": "GET", "url": {"raw": "{{base_url}}/api/villas/properties/{{property_id}}/", "host": ["{{base_url}}"], "path": ["api","villas","properties","{{property_id}}",""]}}},
+        {"name": "Create Property (Multipart)", "request": {"method": "POST", "body": {"mode": "formdata", "formdata": [
+          {"key": "title", "value": "Luxury Beach Villa", "type": "text"},
+          {"key": "description", "value": "Ocean view villa", "type": "text"},
+          {"key": "price", "value": "750.00", "type": "text"},
+          {"key": "listing_type", "value": "rent", "type": "text"},
+          {"key": "status", "value": "draft", "type": "text"},
+          {"key": "address", "value": "123 Ocean Drive", "type": "text"},
+          {"key": "city", "value": "Miami", "type": "text"},
+          {"key": "max_guests", "value": "10", "type": "text"},
+          {"key": "bedrooms", "value": "5", "type": "text"},
+          {"key": "bathrooms", "value": "4", "type": "text"},
+          {"key": "pool", "value": "1", "type": "text"},
+          {"key": "amenities", "value": "{\"wifi\": true, \"pool\": \"private\"}", "type": "text"},
+          {"key": "latitude", "value": "25.790700", "type": "text"},
+          {"key": "longitude", "value": "-80.130000", "type": "text"},
+          {"key": "media_files", "type": "file", "src": []},
+          {"key": "media_metadata", "value": "{\"category\":\"media\",\"caption\":\"Main View\",\"is_primary\":true,\"order\":0}", "type": "text"}
+        ]}, "url": {"raw": "{{base_url}}/api/villas/properties/", "host": ["{{base_url}}"], "path": ["api","villas","properties",""]}, "description": "Create property (media handled inline)."}},
+        {"name": "Update Property", "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"price\": \"800.00\",\n  \"status\": \"pending_review\"\n}"}, "url": {"raw": "{{base_url}}/api/villas/properties/{{property_id}}/", "host": ["{{base_url}}"], "path": ["api","villas","properties","{{property_id}}",""]}}},
+        {"name": "Delete Property", "request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/villas/properties/{{property_id}}/", "host": ["{{base_url}}"], "path": ["api","villas","properties","{{property_id}}",""]}}},
+        {"name": "Availability (Month)", "request": {"method": "GET", "url": {"raw": "{{base_url}}/api/villas/properties/{{property_id}}/availability/?month=12&year=2025", "host": ["{{base_url}}"], "path": ["api","villas","properties","{{property_id}}","availability",""]}}}
       ]
     },
     {
-      "name": "🎬 Media Management",
+      "name": "📅 Bookings",
       "item": [
-        {
-          "name": "Upload Property Image",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 201) {",
-                  "    var jsonData = pm.response.json();",
-                  "    pm.environment.set('media_id', jsonData.id);",
-                  "    pm.test('✅ Image uploaded', () => pm.expect(jsonData.id).to.exist);",
-                  "    console.log('Media uploaded with ID:', jsonData.id);",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "property",
-                  "value": "{{property_id}}",
-                  "type": "text"
-                },
-                {
-                  "key": "file",
-                  "type": "file",
-                  "src": []
-                },
-                {
-                  "key": "title",
-                  "value": "Main Pool View",
-                  "type": "text"
-              ]
-            },
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/{{property_id}}/media/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", "{{property_id}}", "media", ""]
-            },
-            "description": "Upload an image for a property. Supports JPEG, PNG, WebP. Auto-detects media type."
-          }
-        },
-        {
-          "name": "Upload Property Video",
-                      "raw": "{\n  \"status\": \"approved\"\n}"
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                    "description": "Change booking status (approved/rejected/completed/cancelled)."
-                  "value": "{{property_id}}",
-                  "type": "text"
-                },
-                {
-                  "key": "file",
-                  "type": "file",
-                  "src": []
-                },
-                {
-                  "key": "title",
-                  "value": "Virtual Tour",
-                  "type": "text"
-                },
-                {
-                  "key": "description",
-                  "value": "Complete walkthrough of the property",
-                  "type": "text"
-                },
-                {
-                  "key": "category",
-                  "value": "other",
-                  "type": "text"
-                },
-                {
-                  "key": "display_order",
-                  "value": "99",
-                  "type": "text"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/{{property_id}}/media/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", "{{property_id}}", "media", ""]
-            },
-            "description": "Upload a video for property. Supports MP4, AVI, MOV."
-          }
-        },
-        {
-            {
-              "name": "ℹ️ Notes",
-              "description": "Media upload occurs ONLY during property creation (multipart). No standalone media endpoints exist in current API code."
-            }
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/{{property_id}}/media/{{media_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", "{{property_id}}", "media", "{{media_id}}", ""]
-            },
-            "description": "Delete a media file from a property."
-          }
-        }
+        {"name": "List Bookings", "request": {"method": "GET", "url": {"raw": "{{base_url}}/api/villas/bookings/", "host": ["{{base_url}}"], "path": ["api","villas","bookings",""]}}},
+        {"name": "Create Booking", "request": {"method": "POST", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"property\": {{property_id}},\n  \"full_name\": \"John Guest\",\n  \"email\": \"guest@example.com\",\n  \"phone\": \"+1234567890\",\n  \"check_in\": \"2025-12-15\",\n  \"check_out\": \"2025-12-22\",\n  \"total_price\": \"5250.00\"\n}"}, "url": {"raw": "{{base_url}}/api/villas/bookings/", "host": ["{{base_url}}"], "path": ["api","villas","bookings",""]}}},
+        {"name": "Get Booking", "request": {"method": "GET", "url": {"raw": "{{base_url}}/api/villas/bookings/{{booking_id}}/", "host": ["{{base_url}}"], "path": ["api","villas","bookings","{{booking_id}}",""]}}},
+        {"name": "Approve Booking", "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"status\": \"approved\"\n}"}, "url": {"raw": "{{base_url}}/api/villas/bookings/{{booking_id}}/", "host": ["{{base_url}}"], "path": ["api","villas","bookings","{{booking_id}}",""]}}},
+        {"name": "Reject Booking", "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"status\": \"rejected\"\n}"}, "url": {"raw": "{{base_url}}/api/villas/bookings/{{booking_id}}/", "host": ["{{base_url}}"], "path": ["api","villas","bookings","{{booking_id}}",""]}}},
+        {"name": "Cancel Booking", "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"status\": \"cancelled\"\n}"}, "url": {"raw": "{{base_url}}/api/villas/bookings/{{booking_id}}/", "host": ["{{base_url}}"], "path": ["api","villas","bookings","{{booking_id}}",""]}}}
+      ]
+    },
+    {
+      "name": "📝 Notes",
+      "item": [
+        {"name": "Media Handling", "request": {"method": "GET", "url": {"raw": "https://example.invalid/", "host": ["example","invalid"], "path": [""]}, "description": "Placeholder"}, "description": "Media files are uploaded only during property creation via multipart form. No standalone /media/ endpoints exist."}
       ]
     }
   ]
