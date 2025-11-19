@@ -231,10 +231,10 @@ class Booking(models.Model):
 
 
 class PropertyImage(models.Model):
-    property = models.ForeignKey("Property", on_delete=models.CASCADE, related_name="images")
+    property = models.ForeignKey("Property", on_delete=models.CASCADE, related_name="media_images")
     image = models.ImageField(upload_to="properties/")
 
 
 class BedroomImage(models.Model):
-    property = models.ForeignKey("Property", on_delete=models.CASCADE, related_name="bedroom_images")
+    property = models.ForeignKey("Property", on_delete=models.CASCADE, related_name="bedrooms_images")
     image = models.ImageField(upload_to="properties/bedrooms/")
