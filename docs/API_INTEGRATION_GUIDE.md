@@ -1,9 +1,9 @@
-# 📘 Eastmond Villa API - Complete Integration Guide
+# 📘 Eastmond Villa API – Accurate Integration Guide (Updated)
 
-**Version:** 2.0  
+**Version:** 2.0 (Docs corrected)  
 **Base URL:** `http://localhost:8888/api`  
-**Authentication:** JWT Bearer Token (dj-rest-auth)  
-**Content-Type:** `application/json`
+**Authentication:** JWT (dj-rest-auth + Simple JWT)  
+**Default Content-Type:** `application/json` (Media upload uses `multipart/form-data`)
 
 ---
 
@@ -22,7 +22,7 @@
 
 ## 🔐 Authentication
 
-All authentication is handled via **dj-rest-auth** package with JWT tokens.
+Authentication handled by **dj-rest-auth** (wrapping Simple JWT). All endpoints below are mounted directly under `/api/` (no extra `accounts/` segment). Previous docs mistakenly showed `/api/accounts/...`; correct paths are shown here.
 
 ### User Roles & Permissions
 
@@ -90,7 +90,7 @@ All authentication is handled via **dj-rest-auth** package with JWT tokens.
 
 ---
 
-### 2. Login (Get Access Token)
+### 2. Login (Get Access & Refresh Tokens)
 
 **Endpoint:** `POST /api/auth/login/`  
 **Authentication:** None (Public)  
@@ -315,7 +315,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ## 👑 User Management (Admin)
 
 **Base URL:** `/api/admin/users/`  
-**Required Role:** Admin (role = `admin` and is_staff = `true`)
+**Admin privilege:** `role="admin"` AND/OR `is_staff=True`. Managers are NOT allowed here unless you later extend permissions.
 
 ### 1. List All Users
 
@@ -544,40 +544,42 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 **Base URL:** `/api/villas/properties/`
 
-### Property Model Fields
+Nested serializer returns media list inline; there is **no separate `/media/` endpoint** in current code. Prior docs & Postman collection showed endpoints like `/properties/{id}/media/` which are NOT implemented. Media is managed only during creation/update via multipart form submission (if your view supports it) and then shown read-only in property responses.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | integer | Unique property ID |
-| `title` | string | Property name/title |
-| `slug` | string | URL-friendly slug (auto-generated) |
-| `description` | text | Detailed property description |
-| `price` | decimal | Base price (per night or sale price) |
-| `booking_rate` | JSON | Custom booking rates: `{"booking": [{"day": 2, "price": 500}]}` |
-| `listing_type` | string | `rent` or `sale` |
-| `status` | string | `draft`, `pending_review`, `published`, `archived`, `sold` |
-| `address` | string | Full street address |
-| `city` | string | City name |
-| `max_guests` | integer | Maximum guest capacity |
-| `bedrooms` | integer | Number of bedrooms |
-| `bathrooms` | integer | Number of bathrooms |
-| `has_pool` | boolean | Has swimming pool |
-| `amenities` | JSON | Property amenities: `{"wifi": true, "pool": "private"}` |
-| `latitude` | decimal | GPS latitude (max 9 digits, 6 decimals) |
-| `longitude` | decimal | GPS longitude (max 9 digits, 6 decimals) |
-| `place_id` | string | Google Places ID |
-| `seo_title` | string | SEO-optimized title |
-| `seo_description` | text | SEO-optimized description |
-| `signature_distinctions` | JSON array | Unique features: `["Ocean view", "Private beach"]` |
-| `staff` | JSON array | Staff details: `[{"role": "chef", "name": "John"}]` |
-| `calendar_link` | URL | External booking calendar link |
-| `google_calendar_id` | string | Google Calendar ID for booking management |
-| `assigned_agent` | integer | Agent user ID (must have role='agent') |
-| `created_by` | object | User who created the property |
-| `created_at` | datetime | Creation timestamp |
-| `updated_at` | datetime | Last update timestamp |
-| `media` | array | Array of media files (images, videos, etc.) |
-| `location_coords` | object | `{"lat": 25.7907, "lng": -80.1300}` |
+### Property Model Fields (Exact – from `villas/models.py`)
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | int | Auto PK |
+| `created_by` | FK(User) | Nullable, creator user |
+| `title` | str(255) | Required |
+| `slug` | str(255) | Auto-generated unique, read-only |
+| `description` | text | Optional |
+| `price` | decimal(10,2) | Base price |
+| `booking_rate` | JSON | Dict (custom rates) |
+| `listing_type` | choice | `rent` or `sale` |
+| `status` | choice | `draft`/`pending_review`/`published`/`archived`/`sold` |
+| `address` | text | Optional |
+| `city` | str(120) | Optional |
+| `max_guests` | positive int | Default 1 |
+| `bedrooms` | positive int | Default 0 |
+| `bathrooms` | positive int | Default 0 |
+| `pool` | positive int | Number of pools (docs previously showed boolean) |
+| `amenities` | JSON | Dict, e.g. `{ "wifi": true }` |
+| `latitude` | decimal(9,6) | Nullable |
+| `longitude` | decimal(9,6) | Nullable |
+| `place_id` | str(255) | Optional |
+| `seo_title` | str(255) | Optional |
+| `seo_description` | text | Optional |
+| `signature_distinctions` | JSON | List of strings |
+| `staff` | JSON | List of staff objects |
+| `calendar_link` | URL | Optional |
+| `google_calendar_id` | str(255) | Optional |
+| `assigned_agent` | FK(User) | Nullable, limited to role='agent' |
+| `created_at` | datetime | Auto set |
+| `updated_at` | datetime | Auto update |
+| `media` | reverse relation | List of `Media` objects (inline) |
+| Derived (serializer): `media_count`, `booking_count`, `price_display`, `property_stats`, `location_coords`, `created_by_name` |
 
 ---
 
@@ -588,10 +590,12 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 **Description:** Get list of all properties.
 
 **Visibility Rules:**
-- **Anonymous users:** Only see `published` properties
-- **Customers:** Only see `published` properties
-- **Agents:** See properties assigned to them
-- **Managers/Admins:** See all properties
+| Role | What they see |
+|------|---------------|
+| Anonymous | Published only |
+| Customer | Published only |
+| Agent | Published + ones assigned to them (plus published global) |
+| Manager/Admin | All statuses |
 
 **Success Response (200 OK):**
 ```json
@@ -689,32 +693,34 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
-### 3. Create Property
+### 3. Create Property (Multipart or JSON)
 
 **Endpoint:** `POST /api/villas/properties/`  
 **Authentication:** Required (Admin or Manager)  
 **Content-Type:** `multipart/form-data`  
 **Description:** Create a new property with optional media files.
 
-**Request Body (Form Data):**
+**Multipart Example (Form Data Keys):**
 ```
-title: "Luxury Beach Villa"
-description: "Beautiful 5-bedroom villa with ocean views"
-price: 750.00
-listing_type: "rent"
-status: "draft"
-address: "123 Ocean Drive"
-city: "Miami Beach"
-max_guests: 10
-bedrooms: 5
-bathrooms: 4
-has_pool: true
-amenities: {"wifi": true, "pool": "private"}
-latitude: 25.790700
-longitude: -80.130000
-assigned_agent: 8
-media_files: [file1.jpg, file2.jpg]
-media_metadata: ['{"category": "media", "caption": "Main View", "is_primary": true, "order": 0}', '{"category": "bedroom", "caption": "Master Bedroom", "order": 1}']
+title=Luxury Beach Villa
+description=Beautiful 5-bedroom villa with ocean views
+price=750.00
+listing_type=rent
+status=draft
+address=123 Ocean Drive
+city=Miami Beach
+max_guests=10
+bedrooms=5
+bathrooms=4
+pool=1
+amenities={"wifi": true, "pool": "private"}
+latitude=25.790700
+longitude=-80.130000
+assigned_agent=8
+media_files=<file1.jpg>
+media_files=<file2.jpg>
+media_metadata={"category":"media","caption":"Main View","is_primary":true,"order":0}
+media_metadata={"category":"bedroom","caption":"Master Bedroom","order":1}
 ```
 
 **Required Fields:**
@@ -729,9 +735,11 @@ media_metadata: ['{"category": "media", "caption": "Main View", "is_primary": tr
 | `bathrooms` | integer | Yes |
 
 **Media Files (Optional):**
-- `media_files`: Array of files (images, videos, PDFs)
-- `media_metadata`: Array of JSON strings (one per file)
-- **Important:** Number of files must match number of metadata entries
+| Key | Purpose |
+|-----|---------|
+| `media_files` | Repeat for each file (image/video/pdf) |
+| `media_metadata` | Repeat JSON string matching each file (same order) |
+| Rule | Counts must match; only one can set `is_primary=true` |
 
 **Media Metadata Structure:**
 ```json
@@ -780,9 +788,8 @@ media_metadata: ['{"category": "media", "caption": "Main View", "is_primary": tr
 - `assigned_agent` must be a user with `role='agent'`
 - Media files are automatically categorized by file extension
 
-**Google Calendar Integration:**
-- Upon creation, a Google Calendar is automatically created for the property
-- The `google_calendar_id` is saved to the property
+**Google Calendar Integration (If configured):**
+Property may store `google_calendar_id`. Creation flow in code (truncated in snippet) suggests attempt to create a calendar; if fails it silently continues.
 
 ---
 
@@ -843,7 +850,7 @@ media_metadata: ['{"category": "media", "caption": "Main View", "is_primary": tr
 
 ---
 
-### 6. Check Property Availability
+### 5. Check Property Availability
 
 **Endpoint:** `GET /api/villas/properties/{property_id}/availability/`  
 **Authentication:** None (Public)  
@@ -898,23 +905,23 @@ GET /api/villas/properties/1/availability/?month=12&year=2025
 
 **Base URL:** `/api/villas/bookings/`
 
-### Booking Model Fields
+### Booking Model Fields (Exact – from `villas/models.py`)
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | integer | Unique booking ID |
-| `property` | integer | Property ID (write-only) |
-| `property_details` | object | Property info (read-only) |
-| `user` | integer | User ID (auto-set from authenticated user) |
-| `user_details` | object | User info (read-only) |
-| `email` | email | Guest's email |
-| `phone` | string | Guest's phone number |
-| `check_in` | date | Check-in date (YYYY-MM-DD) |
-| `check_out` | date | Check-out date (YYYY-MM-DD) |
-| `total_price` | decimal | Total booking price |
-| `status` | string | `pending`, `approved`, `rejected`, `completed`, `cancelled` |
-| `google_event_id` | string | Google Calendar event ID |
-| `created_at` | datetime | Booking creation timestamp |
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | int | PK |
+| `property` | FK(Property) | Write-only in serializer (ID) |
+| `user` | FK(User) | Auto set to authenticated user |
+| `full_name` | str(255) | Required guest name (missing in older docs) |
+| `email` | EmailField | Guest email |
+| `phone` | str(30) | Optional phone |
+| `check_in` | date | Must be >= today |
+| `check_out` | date | Must be > `check_in` |
+| `status` | choice | `pending|approved|rejected|completed|cancelled` |
+| `total_price` | decimal(10,2) | Provided or calculated externally |
+| `google_event_id` | str(255) | Set when approved (calendar event) |
+| `created_at` | datetime | Auto timestamp |
+| Serializer extras | `property_details`, `user_details` nested read-only |
 
 ---
 
@@ -989,7 +996,8 @@ GET /api/villas/properties/1/availability/?month=12&year=2025
 ```json
 {
   "property": 1,
-  "email": "user@example.com",
+  "full_name": "John Guest",
+  "email": "guest@example.com",
   "phone": "+1234567890",
   "check_in": "2025-12-15",
   "check_out": "2025-12-22",
@@ -998,14 +1006,15 @@ GET /api/villas/properties/1/availability/?month=12&year=2025
 ```
 
 **Required Fields:**
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `property` | integer | Yes | Property ID to book |
-| `email` | email | Yes | Guest's email |
-| `phone` | string | Yes | Guest's phone |
-| `check_in` | date | Yes | Check-in date (YYYY-MM-DD) |
-| `check_out` | date | Yes | Check-out date (YYYY-MM-DD) |
-| `total_price` | decimal | Yes | Total booking price |
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `property` | int | Yes | FK ID |
+| `full_name` | str | Yes | Guest name |
+| `email` | email | Yes | Guest email |
+| `phone` | str | Yes | Guest phone |
+| `check_in` | date | Yes | ISO date |
+| `check_out` | date | Yes | Must be after check_in |
+| `total_price` | decimal | Yes | Your pricing logic |
 
 **Validation Rules:**
 - `check_out` must be after `check_in`
@@ -1018,21 +1027,15 @@ GET /api/villas/properties/1/availability/?month=12&year=2025
 {
   "id": 125,
   "property": 1,
-  "property_details": {
-    "id": 1,
-    "title": "Luxury Beach Villa"
-  },
-  "email": "user@example.com",
+  "property_details": {"id": 1, "title": "Luxury Beach Villa"},
+  "full_name": "John Guest",
+  "email": "guest@example.com",
   "phone": "+1234567890",
   "check_in": "2025-12-15",
   "check_out": "2025-12-22",
   "total_price": "5250.00",
   "user": 12,
-  "user_details": {
-    "id": 12,
-    "name": "John Doe",
-    "email": "user@example.com"
-  },
+  "user_details": {"id": 12, "name": "Account Name", "email": "account@example.com"},
   "status": "pending",
   "google_event_id": null,
   "created_at": "2025-11-19T13:00:00Z"
@@ -1129,11 +1132,11 @@ GET /api/villas/properties/1/availability/?month=12&year=2025
 
 ---
 
-## 🎬 Media Management
+## 🎬 Media Handling
 
-Media files are uploaded as part of property creation or can be managed separately.
+Media is inlined in property responses. There is **no separate media CRUD endpoint** in current `villas/urls.py`. Upload happens during property create (or future update if implemented). Remove older references to `/media/` endpoints.
 
-### Media Model Fields
+### Media Model Fields (Exact – from `villas/models.py`)
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -1156,10 +1159,9 @@ Files are automatically categorized by extension:
 
 ---
 
-### 1. Upload Media with Property
+### Upload Media During Property Creation
 
-**Endpoint:** `POST /api/villas/properties/`  
-**Content-Type:** `multipart/form-data`
+Use repeated `media_files` & `media_metadata` form parts as shown earlier.
 
 **Request Body:**
 ```
@@ -1177,7 +1179,7 @@ media_metadata: ['{"category": "media", "caption": "Main View", "is_primary": tr
 
 ---
 
-### 2. Media in Property Response
+### Media in Property Response Example
 
 When retrieving a property, media is included:
 
@@ -1220,7 +1222,7 @@ When retrieving a property, media is included:
 
 The system automatically integrates with Google Calendar for booking management.
 
-### How It Works
+### Flow
 
 1. **Property Creation:**
    - When a property is created, a dedicated Google Calendar is automatically created
@@ -1238,7 +1240,7 @@ The system automatically integrates with Google Calendar for booking management.
    - The `/availability/` endpoint queries the property's Google Calendar
    - Returns all booked date ranges for a given month
 
-### Availability Validation
+### Booking Availability Validation (Simplified)
 
 When creating a booking, the system:
 1. Checks if property has `google_calendar_id`
@@ -1296,7 +1298,7 @@ When creating a booking, the system:
 
 ---
 
-## 💻 Code Examples
+## 💻 Code Examples (Adjusted Paths)
 
 ### Python (Requests)
 
@@ -1358,7 +1360,7 @@ class EastmondVillaAPI:
     
     def get_properties(self):
         """Get all properties (public endpoint)"""
-        response = requests.get(f'{self.base_url}/villas/properties/')
+  response = requests.get(f'{self.base_url}/villas/properties/')
         response.raise_for_status()
         return response.json()
     
@@ -1387,8 +1389,8 @@ class EastmondVillaAPI:
     
     def create_booking(self, property_id, email, phone, check_in, check_out, total_price):
         """Create a new booking"""
-        response = requests.post(
-            f'{self.base_url}/villas/bookings/',
+    response = requests.post(
+      f'{self.base_url}/villas/bookings/',
             headers=self._get_headers(),
             json={
                 'property': property_id,
@@ -1446,7 +1448,7 @@ class EastmondVillaAPI:
         return response.json()
     
     # Admin endpoints
-    def admin_list_users(self):
+  def admin_list_users(self):
         """List all users (admin only)"""
         response = requests.get(
             f'{self.base_url}/admin/users/',
@@ -1534,7 +1536,7 @@ if __name__ == '__main__':
 
 ---
 
-### JavaScript (Fetch API)
+### JavaScript (Fetch API) (Adjusted – removed wrong /accounts/ prefixes)
 
 ```javascript
 const BASE_URL = 'http://localhost:8888/api';
@@ -1908,7 +1910,20 @@ All timestamps are in ISO 8601 format with timezone: `YYYY-MM-DDTHH:MM:SSZ`
 
 ---
 
-**Last Updated:** November 19, 2025  
+**Last Updated:** November 20, 2025  
 **API Version:** 2.0  
 **Framework:** Django REST Framework + dj-rest-auth  
 **Contact:** support@eastmondvilla.com
+
+---
+### 🟡 বাংলা সারাংশ (Bangla Summary)
+এই আপডেটেড ডকুমেন্টে আপনার প্রজেক্টের আসল এন্ডপয়েন্টগুলো ঠিক করা হয়েছে:
+- আগের ভুল `/api/accounts/...` এখন সরানো – সঠিক পাথ `/api/auth/...`, `/api/registration/`, `/api/admin/users/`, `/api/villas/properties/`, `/api/villas/bookings/`।
+- Property model এ `has_pool` ছিল না; আসলে আছে `pool` (ইন্টিজার)।
+- Booking এ `full_name` ফিল্ড যোগ করা হয়েছে (আগের ডকসে ছিল না)।
+- আলাদা `/properties/{id}/media/` এন্ডপয়েন্ট নেই – মিডিয়া আসে Property response এর ভিতরে।
+- Media আপলোড করতে multipart form ব্যবহার করতে হবে এবং প্রতিটি ফাইলের জন্য matching `media_metadata` দিতে হবে।
+- Nested serializer এর মাধ্যমে `property_details`, `user_details`, `media` ইতিমধ্যে আসে – উদাহরণ আপডেট করা হয়েছে।
+এই গাইড অনুযায়ী Postman collection আপডেট করুন – ভুল path ও অতিরিক্ত ফিল্ডগুলো বাদ দিন।
+যদি আরও বাংলা ভার্সন দরকার থাকে সম্পূর্ণ গাইডের, জানাবেন।
+

@@ -18,7 +18,7 @@
   },
   "item": [
     {
-      "name": "🔐 Authentication",
+      "name": "🔐 Authentication (Corrected Paths)",
       "item": [
         {
           "name": "Register New User",
@@ -58,9 +58,9 @@
               "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"name\": \"New Customer\",\n  \"phone\": \"+1234567890\",\n  \"password1\": \"SecurePass123!\",\n  \"password2\": \"SecurePass123!\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/accounts/registration/",
+              "raw": "{{base_url}}/api/registration/",
               "host": ["{{base_url}}"],
-              "path": ["api", "accounts", "registration", ""]
+              "path": ["api", "registration", ""]
             },
             "description": "Register a new user. Default role is 'customer' with 'only_view' permission."
           }
@@ -109,9 +109,9 @@
               "raw": "{\n  \"email\": \"{{current_user_email}}\",\n  \"password\": \"{{current_user_password}}\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/accounts/auth/login/",
+              "raw": "{{base_url}}/api/auth/login/",
               "host": ["{{base_url}}"],
-              "path": ["api", "accounts", "auth", "login", ""]
+              "path": ["api", "auth", "login", ""]
             },
             "description": "Login with any user role. Access token is automatically saved and used for subsequent requests."
           }
@@ -122,9 +122,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/accounts/auth/user/",
+              "raw": "{{base_url}}/api/auth/user/",
               "host": ["{{base_url}}"],
-              "path": ["api", "accounts", "auth", "user", ""]
+              "path": ["api", "auth", "user", ""]
             },
             "description": "Get details of the currently authenticated user."
           }
@@ -162,9 +162,9 @@
               "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/accounts/auth/token/refresh/",
+              "raw": "{{base_url}}/api/auth/token/refresh/",
               "host": ["{{base_url}}"],
-              "path": ["api", "accounts", "auth", "token", "refresh", ""]
+              "path": ["api", "auth", "token", "refresh", ""]
             }
           }
         },
@@ -196,9 +196,9 @@
               "raw": "{}"
             },
             "url": {
-              "raw": "{{base_url}}/api/accounts/auth/logout/",
+              "raw": "{{base_url}}/api/auth/logout/",
               "host": ["{{base_url}}"],
-              "path": ["api", "accounts", "auth", "logout", ""]
+              "path": ["api", "auth", "logout", ""]
             }
           }
         }
@@ -231,9 +231,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/accounts/admin/users/",
+              "raw": "{{base_url}}/api/admin/users/",
               "host": ["{{base_url}}"],
-              "path": ["api", "accounts", "admin", "users", ""]
+              "path": ["api", "admin", "users", ""]
             },
             "description": "List all users in the system. Admin only."
           }
@@ -244,9 +244,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/accounts/admin/users/{{target_user_id}}/",
+              "raw": "{{base_url}}/api/admin/users/{{target_user_id}}/",
               "host": ["{{base_url}}"],
-              "path": ["api", "accounts", "admin", "users", "{{target_user_id}}", ""]
+              "path": ["api", "admin", "users", "{{target_user_id}}", ""]
             },
             "description": "Get details of a specific user. Admin only."
           }
@@ -281,9 +281,9 @@
               "raw": "{\n  \"email\": \"newmanager@example.com\",\n  \"name\": \"New Manager\",\n  \"password\": \"ManagerPass123!\",\n  \"role\": \"manager\",\n  \"permission\": \"full_access\",\n  \"is_active\": true\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/accounts/admin/users/",
+              "raw": "{{base_url}}/api/admin/users/",
               "host": ["{{base_url}}"],
-              "path": ["api", "accounts", "admin", "users", ""]
+              "path": ["api", "admin", "users", ""]
             },
             "description": "Create a new user with specific role and permissions. Admin only."
           }
@@ -303,9 +303,9 @@
               "raw": "{\n  \"role\": \"agent\",\n  \"permission\": \"read_write\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/accounts/admin/users/{{target_user_id}}/",
+              "raw": "{{base_url}}/api/admin/users/{{target_user_id}}/",
               "host": ["{{base_url}}"],
-              "path": ["api", "accounts", "admin", "users", "{{target_user_id}}", ""]
+              "path": ["api", "admin", "users", "{{target_user_id}}", ""]
             },
             "description": "Update user role and permissions. Admin only."
           }
@@ -316,9 +316,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/api/accounts/auth/users/{{target_user_id}}/",
+              "raw": "{{base_url}}/api/auth/users/{{target_user_id}}/",
               "host": ["{{base_url}}"],
-              "path": ["api", "accounts", "auth", "users", "{{target_user_id}}", ""]
+              "path": ["api", "auth", "users", "{{target_user_id}}", ""]
             },
             "description": "Permanently delete a user. Admin only."
           }
@@ -393,7 +393,7 @@
                 }
               ]
             },
-            "description": "List all properties. Public endpoint - no authentication required."
+            "description": "List published properties (public). Admin/manager see all internally (handled by backend)."
           }
         },
         {
@@ -427,7 +427,7 @@
                 }
               ]
             },
-            "description": "Search and filter properties by various criteria."
+            "description": "Filter published properties (public)."
           }
         },
         {
@@ -443,11 +443,11 @@
               "host": ["{{base_url}}"],
               "path": ["api", "villas", "properties", "{{property_id}}", ""]
             },
-            "description": "Get detailed information about a specific property including media and amenities."
+            "description": "Get property details. Media included inline."
           }
         },
         {
-          "name": "Create Property (Admin/Manager)",
+          "name": "Create Property (Multipart)",
           "event": [
             {
               "listen": "test",
@@ -467,22 +467,31 @@
           ],
           "request": {
             "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Luxury Beach Villa\",\n  \"description\": \"Beautiful 5-bedroom villa with stunning ocean views and private beach access. Perfect for family vacations.\",\n  \"address\": \"123 Ocean Drive\",\n  \"city\": \"Miami Beach\",\n  \"state\": \"FL\",\n  \"country\": \"USA\",\n  \"zip_code\": \"33139\",\n  \"latitude\": 25.7907,\n  \"longitude\": -80.1300,\n  \"bedrooms\": 5,\n  \"bathrooms\": 4,\n  \"max_guests\": 10,\n  \"base_price\": \"750.00\",\n  \"cleaning_fee\": \"200.00\",\n  \"security_deposit\": \"500.00\",\n  \"amenities\": [\"WiFi\", \"Pool\", \"Beach Access\", \"Air Conditioning\", \"Kitchen\", \"Parking\", \"BBQ Grill\"],\n  \"is_active\": true,\n  \"is_featured\": false\n}"
+              "mode": "formdata",
+              "formdata": [
+                {"key": "title", "value": "Luxury Beach Villa", "type": "text"},
+                {"key": "description", "value": "Ocean view villa", "type": "text"},
+                {"key": "price", "value": "750.00", "type": "text"},
+                {"key": "listing_type", "value": "rent", "type": "text"},
+                {"key": "status", "value": "draft", "type": "text"},
+                {"key": "max_guests", "value": "10", "type": "text"},
+                {"key": "bedrooms", "value": "5", "type": "text"},
+                {"key": "bathrooms", "value": "4", "type": "text"},
+                {"key": "pool", "value": "1", "type": "text"},
+                {"key": "amenities", "value": "{\"wifi\": true, \"pool\": \"private\"}", "type": "text"},
+                {"key": "latitude", "value": "25.790700", "type": "text"},
+                {"key": "longitude", "value": "-80.130000", "type": "text"},
+                {"key": "media_files", "type": "file", "src": []},
+                {"key": "media_metadata", "value": "{\"category\":\"media\",\"caption\":\"Main View\",\"is_primary\":true,\"order\":0}", "type": "text"}
+              ]
             },
             "url": {
               "raw": "{{base_url}}/api/villas/properties/",
               "host": ["{{base_url}}"],
               "path": ["api", "villas", "properties", ""]
             },
-            "description": "Create a new property. Requires admin or manager role with full_access permission."
+            "description": "Create property (admin/manager). Multipart allows media upload."
           }
         },
         {
@@ -554,10 +563,10 @@
                   "value": "2025-12-01",
                   "description": "Check-in date (YYYY-MM-DD)"
                 },
-                {
-                  "key": "check_out",
-                  "value": "2025-12-07",
-                  "description": "Check-out date (YYYY-MM-DD)"
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"price\": \"800.00\",\n  \"status\": \"published\"\n}"
+                },
                 }
               ]
             },
@@ -566,22 +575,6 @@
         }
       ]
     },
-    {
-      "name": "📅 Bookings",
-      "item": [
-        {
-          "name": "List My Bookings",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "if (pm.response.code === 200) {",
-                  "    var jsonData = pm.response.json();",
-                  "    if (jsonData.results && jsonData.results.length > 0) {",
-                  "        pm.environment.set('booking_id', jsonData.results[0].id);",
-                  "        console.log('📅 Found', jsonData.count, 'bookings');",
-                  "    }",
                   "}"
                 ],
                 "type": "text/javascript"
@@ -590,26 +583,18 @@
           ],
           "request": {
             "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{base_url}}/api/villas/bookings/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "bookings", ""],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "",
-                  "disabled": true,
-                  "description": "Filter by status: pending, confirmed, cancelled, completed"
+                "url": {
+                  "raw": "{{base_url}}/api/villas/properties/{{property_id}}/availability/?month=12&year=2025",
+                  "host": ["{{base_url}}"],
+                  "path": ["api", "villas", "properties", "{{property_id}}", "availability", ""],
+                  "query": [
+                    {"key": "month", "value": "12"},
+                    {"key": "year", "value": "2025"}
+                  ]
                 },
-                {
-                  "key": "ordering",
-                  "value": "-created_at",
-                  "disabled": true
-                }
-              ]
+                "description": "Get booked date ranges for the month from Google Calendar."
             },
-            "description": "List bookings for the authenticated user. Admins and managers see all bookings."
+            "description": "List bookings. Admin/manager see all; regular user sees own."
           }
         },
         {
@@ -644,14 +629,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"property\": {{property_id}},\n  \"check_in\": \"2025-12-15\",\n  \"check_out\": \"2025-12-22\",\n  \"guests\": 4,\n  \"special_requests\": \"Early check-in if possible. Need baby crib and high chair.\"\n}"
+              "raw": "{\n  \"property\": {{property_id}},\n  \"full_name\": \"John Guest\",\n  \"email\": \"guest@example.com\",\n  \"phone\": \"+1234567890\",\n  \"check_in\": \"2025-12-15\",\n  \"check_out\": \"2025-12-22\",\n  \"total_price\": \"5250.00\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/villas/bookings/",
               "host": ["{{base_url}}"],
               "path": ["api", "villas", "bookings", ""]
             },
-            "description": "Create a new booking for a property. Authenticated users only."
+            "description": "Create booking (status auto 'pending')."
           }
         },
         {
@@ -789,28 +774,6 @@
                   "key": "title",
                   "value": "Main Pool View",
                   "type": "text"
-                },
-                {
-                  "key": "description",
-                  "value": "Beautiful infinity pool overlooking the ocean",
-                  "type": "text"
-                },
-                {
-                  "key": "category",
-                  "value": "exterior",
-                  "type": "text",
-                  "description": "Options: exterior, interior, bedroom, bathroom, kitchen, pool, view, other"
-                },
-                {
-                  "key": "is_primary",
-                  "value": "true",
-                  "type": "text"
-                },
-                {
-                  "key": "display_order",
-                  "value": "1",
-                  "type": "text"
-                }
               ]
             },
             "url": {
@@ -823,14 +786,14 @@
         },
         {
           "name": "Upload Property Video",
-          "request": {
+                      "raw": "{\n  \"status\": \"approved\"\n}"
             "method": "POST",
             "header": [],
             "body": {
               "mode": "formdata",
               "formdata": [
                 {
-                  "key": "property",
+                    "description": "Change booking status (approved/rejected/completed/cancelled)."
                   "value": "{{property_id}}",
                   "type": "text"
                 },
@@ -870,52 +833,10 @@
           }
         },
         {
-          "name": "Add Virtual Tour URL",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"property\": {{property_id}},\n  \"url\": \"https://my.matterport.com/show/?m=example123\",\n  \"title\": \"360° Virtual Tour\",\n  \"description\": \"Interactive 3D walkthrough\",\n  \"category\": \"other\",\n  \"display_order\": 100\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/{{property_id}}/media/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", "{{property_id}}", "media", ""]
-            },
-            "description": "Add a virtual tour URL (Matterport, etc.) for a property."
-          }
-        },
-        {
-          "name": "Update Media",
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Updated Title\",\n  \"is_primary\": false,\n  \"display_order\": 5\n}"
-            },
-            "url": {
-              "raw": "{{base_url}}/api/villas/properties/{{property_id}}/media/{{media_id}}/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "villas", "properties", "{{property_id}}", "media", "{{media_id}}", ""]
-            },
-            "description": "Update media metadata like title, display order, or primary status."
-          }
-        },
-        {
-          "name": "Delete Media",
-          "request": {
+            {
+              "name": "ℹ️ Notes",
+              "description": "Media upload occurs ONLY during property creation (multipart). No standalone media endpoints exist in current API code."
+            }
             "method": "DELETE",
             "header": [],
             "url": {
