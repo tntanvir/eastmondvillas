@@ -31,8 +31,8 @@ class PropertySerializer(serializers.ModelSerializer):
     booking_count = serializers.SerializerMethodField()
     price_display = serializers.SerializerMethodField()
     property_stats = serializers.SerializerMethodField()
-    property_images = PropertyImageSerializer(many=True, read_only=True)
-    bedroom_images = BedroomImageSerializer(many=True, read_only=True)
+    media_images = PropertyImageSerializer(many=True, read_only=True)
+    bedrooms_images = BedroomImageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Property
@@ -43,10 +43,10 @@ class PropertySerializer(serializers.ModelSerializer):
             'longitude', 'place_id', 'seo_title', 'seo_description',
             'signature_distinctions', 'staff', 'calendar_link', 'google_calendar_id',
             'created_at', 'updated_at', 'assigned_agent', 'created_by', 'created_by_name',
-            'booking_count', 'location_coords', 'property_stats', 'property_images', 'bedroom_images'
+            'booking_count', 'location_coords', 'property_stats', 'media_images', 'bedrooms_images'
         ]
         read_only_fields = [
-            'slug', 'created_by', 'created_by_name', 'booking_count', 'property_images', 'bedroom_images',
+            'slug', 'created_by', 'created_by_name', 'booking_count', 'media_images', 'bedrooms_images',
             'created_at', 'updated_at', 'location_coords', 'price_display', 'property_stats'
         ]
 
