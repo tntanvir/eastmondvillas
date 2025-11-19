@@ -108,7 +108,7 @@ def test_create_property_admin(token):
             "status": "draft",
             "city": "Test City",
             "address": "123 Test Street",
-            "max_guests": "6",
+            "add_guest": "6",
             "bedrooms": "3",
             "bathrooms": "2",
             "has_pool": "true",

@@ -81,7 +81,7 @@ curl -X POST http://localhost:8888/api/villas/properties/ \
   -F "status=draft" \
   -F "city=Miami" \
   -F "address=123 Ocean Drive" \
-  -F "max_guests=10" \
+  -F "add_guest=10" \
   -F "bedrooms=5" \
   -F "bathrooms=4" \
   -F "has_pool=true" \
@@ -100,7 +100,7 @@ curl -X POST http://localhost:8888/api/villas/properties/ \
   -F "listing_type=rent" \
   -F "status=published" \
   -F "city=Miami" \
-  -F "max_guests=8" \
+  -F "add_guest=8" \
   -F "bedrooms=4" \
   -F "bathrooms=3" \
   -F "media_files=@/path/to/image1.jpg" \

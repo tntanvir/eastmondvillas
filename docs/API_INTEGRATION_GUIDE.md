@@ -561,7 +561,7 @@ Nested serializer returns media list inline; there is **no separate `/media/` en
 | `status` | choice | `draft`/`pending_review`/`published`/`archived`/`sold` |
 | `address` | text | Optional |
 | `city` | str(120) | Optional |
-| `max_guests` | positive int | Default 1 |
+| `add_guest` | positive int | Default 1 |
 | `bedrooms` | positive int | Default 0 |
 | `bathrooms` | positive int | Default 0 |
 | `pool` | positive int | Number of pools (docs previously showed boolean) |
@@ -615,7 +615,7 @@ Nested serializer returns media list inline; there is **no separate `/media/` en
     "status": "published",
     "address": "123 Ocean Drive",
     "city": "Miami Beach",
-    "max_guests": 10,
+    "add_guest": 10,
     "bedrooms": 5,
     "bathrooms": 4,
     "has_pool": true,
@@ -709,7 +709,7 @@ listing_type=rent
 status=draft
 address=123 Ocean Drive
 city=Miami Beach
-max_guests=10
+add_guest=10
 bedrooms=5
 bathrooms=4
 pool=1
@@ -730,7 +730,7 @@ media_metadata={"category":"bedroom","caption":"Master Bedroom","order":1}
 | `price` | decimal | Yes |
 | `address` | string | Yes |
 | `city` | string | Yes |
-| `max_guests` | integer | Yes |
+| `add_guest` | integer | Yes |
 | `bedrooms` | integer | Yes |
 | `bathrooms` | integer | Yes |
 
@@ -1838,7 +1838,7 @@ curl -X POST http://localhost:8888/api/villas/properties/ \
   -F "listing_type=rent" \
   -F "address=123 Ocean Drive" \
   -F "city=Miami" \
-  -F "max_guests=10" \
+  -F "add_guest=10" \
   -F "bedrooms=5" \
   -F "bathrooms=4" \
   -F "media_files=@/path/to/image1.jpg" \

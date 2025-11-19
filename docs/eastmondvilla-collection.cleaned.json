@@ -72,7 +72,7 @@
           {"key": "price", "value": "750.00", "type": "text"},
           {"key": "listing_type", "value": "rent", "type": "text"},
           {"key": "status", "value": "draft", "type": "text"},
-          {"key": "max_guests", "value": "10", "type": "text"},
+          {"key": "add_guest", "value": "10", "type": "text"},
           {"key": "bedrooms", "value": "5", "type": "text"},
           {"key": "bathrooms", "value": "4", "type": "text"},
           {"key": "pool", "value": "1", "type": "text"},

@@ -186,7 +186,7 @@ class Command(BaseCommand):
                 status=status_choice,
                 address=f'{random.randint(100, 9999)} {random.choice(["Ocean", "Beach", "Palm", "Sunset", "Sea"])} {random.choice(["Drive", "Avenue", "Road", "Boulevard"])}',
                 city=cities[i % len(cities)],
-                max_guests=random.randint(4, 16),
+                add_guest=random.randint(4, 16),
                 bedrooms=random.randint(2, 8),
                 bathrooms=random.randint(2, 6),
                 has_pool=random.choice([True, True, False]),
