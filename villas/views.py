@@ -25,6 +25,9 @@ class PropertyViewSet(viewsets.ModelViewSet):
         
         user = self.request.user
 
+        if user.is_authenticated:
+            queryset = Property.objects.prefetch_related('favorited_by')
+
         if not user.is_authenticated:
             return Property.objects.filter(status=Property.StatusType.PUBLISHED).order_by('-created_at')
         
