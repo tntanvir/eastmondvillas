@@ -10,8 +10,8 @@ from datetime import datetime, timedelta
 from . import google_calendar_service
 
 
-from .models import Property, Media, Booking, PropertyImage, BedroomImage
-from .serializers import PropertySerializer , BookingSerializer
+from .models import Property, Media, Booking, PropertyImage, BedroomImage, Review, ReviewImage, Favorite
+from .serializers import PropertySerializer , BookingSerializer, MediaSerializer, PropertyImageSerializer, BedroomImageSerializer, ReviewSerializer, ReviewImageSerializer, FavoriteSerializer
 
 
 from accounts.permissions import IsAdminOrManager, IsAgentWithFullAccess, IsAssignedAgentReadOnly, IsOwnerOrAdminOrManager
@@ -205,6 +205,25 @@ def get_property_availability(request, property_pk):
     return Response(booked_dates, status=status.HTTP_200_OK)
 
 
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role in ['admin', 'manager']:
+            return Review.objects.all().select_related('property', 'user')
+        return Review.objects.filter(user=user).select_related('property', 'user')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 
