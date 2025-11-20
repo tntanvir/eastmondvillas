@@ -186,6 +186,20 @@ class ReviewSerializer(serializers.ModelSerializer):
         return data
 
 
+class FavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = ['id', 'property', 'user', 'created_at']
+        read_only_fields = ['user', 'created_at']
+
+    def validate(self, data):
+        property = data.get('property')
+        user = self.context['request'].user
+
+        if Favorite.objects.filter(property=property, user=user).exists():
+            raise serializers.ValidationError("This property is already in your favorites.")
+        return data
+
 
 
         
