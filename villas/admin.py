@@ -4,7 +4,7 @@ from django.urls import reverse
 from django.db.models import Count
 from unfold.admin import ModelAdmin, TabularInline, StackedInline
 from unfold.decorators import display
-from .models import Property, Media, Booking, PropertyImage, BedroomImage
+from .models import Property, Media, Booking, PropertyImage, BedroomImage, Review, ReviewImage, Favorite
 
 
 class MediaInline(TabularInline):
@@ -26,7 +26,6 @@ class MediaInline(TabularInline):
         elif obj.file:
             return format_html('<span>📄 {}</span>', obj.get_media_type_display())
         return '-'
-
 
 class BookingInline(TabularInline):
     """Inline admin for Bookings associated with a Property."""
@@ -63,9 +62,6 @@ class BedroomImageInline(admin.TabularInline):
         if obj.image:
             return format_html('<img src="{}" style="height: 80px;" />', obj.image.url)
         return "-"
-
-
-
 
 @admin.register(Property)
 class PropertyAdmin(ModelAdmin):
@@ -177,7 +173,6 @@ class MediaAdmin(ModelAdmin):
         qs = super().get_queryset(request)
         return qs.select_related('listing')
 
-
 @admin.register(Booking)
 class BookingAdmin(ModelAdmin):
     """Admin interface for Booking model with Unfold styling."""
@@ -285,3 +280,117 @@ class BookingAdmin(ModelAdmin):
 
 
 
+
+@admin.register(Review)
+class ReviewAdmin(ModelAdmin):
+    """Admin interface for Review model with Unfold styling."""
+    
+    list_display = (
+        'id',
+        'property_link',
+        'user_link',
+        'rating',
+        'created_at',
+    )
+    
+    list_filter = (
+        'rating',
+        'created_at',
+    )
+    
+    search_fields = (
+        'property__title',
+        'user__name',
+        'comment',
+    )
+    
+    readonly_fields = ('created_at',)
+    
+    fieldsets = (
+        ('Review Details', {
+            'fields': (
+                'property',
+                'user',
+                'rating',
+                'comment',
+            )
+        }),
+        ('Metadata', {
+            'fields': (
+                'created_at',
+            ),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    @display(description='Property', ordering='property__title')
+    def property_link(self, obj):
+        """Link to the associated property."""
+        url = reverse('admin:villas_property_change', args=[obj.property.pk])
+        return format_html('<a href="{}">{}</a>', url, obj.property.title)
+    
+    @display(description='User', ordering='user__name')
+    def user_link(self, obj):
+        """Link to the user who wrote the review."""
+        url = reverse('admin:accounts_user_change', args=[obj.user.pk])
+        return format_html('<a href="{}">{}</a>', url, obj.user.name)
+    
+    def get_queryset(self, request):
+        """Optimize queries."""
+        qs = super().get_queryset(request)
+        return qs.select_related('property', 'user')
+    
+@admin.register(Favorite)
+class FavoriteAdmin(ModelAdmin):
+    """Admin interface for Favorite model with Unfold styling."""
+    
+    list_display = (
+        'id',
+        'property_link',
+        'user_link',
+        'created_at',
+    )
+    
+    list_filter = (
+        'created_at',
+    )
+    
+    search_fields = (
+        'property__title',
+        'user__name',
+    )
+    
+    readonly_fields = ('created_at',)
+    
+    fieldsets = (
+        ('Favorite Details', {
+            'fields': (
+                'property',
+                'user',
+            )
+        }),
+        ('Metadata', {
+            'fields': (
+                'created_at',
+            ),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    @display(description='Property', ordering='property__title')
+    def property_link(self, obj):
+        """Link to the associated property."""
+        url = reverse('admin:villas_property_change', args=[obj.property.pk])
+        return format_html('<a href="{}">{}</a>', url, obj.property.title)
+    
+    @display(description='User', ordering='user__name')
+    def user_link(self, obj):
+        """Link to the user who favorited the property."""
+        url = reverse('admin:accounts_user_change', args=[obj.user.pk])
+        return format_html('<a href="{}">{}</a>', url, obj.user.name)
+    
+    def get_queryset(self, request):
+        """Optimize queries."""
+        qs = super().get_queryset(request)
+        return qs.select_related('property', 'user')
+    

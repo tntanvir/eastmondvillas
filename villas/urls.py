@@ -1,11 +1,13 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import PropertyViewSet, BookingViewSet, get_property_availability
+from .views import PropertyViewSet, BookingViewSet, get_property_availability, FavoriteViewSet, ReviewViewSet
 
 
 router = DefaultRouter()
 router.register(r'properties', PropertyViewSet, basename='property')
 router.register(r'bookings', BookingViewSet, basename='booking')
+router.register(r'favorites', FavoriteViewSet, basename='favorite')
+router.register(r'reviews', ReviewViewSet, basename='review')
 
 
 
