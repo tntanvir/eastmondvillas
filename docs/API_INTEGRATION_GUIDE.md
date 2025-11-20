@@ -564,8 +564,9 @@ Nested serializer returns media list inline; there is **no separate `/media/` en
 | `add_guest` | positive int | Default 1 |
 | `bedrooms` | positive int | Default 0 |
 | `bathrooms` | positive int | Default 0 |
-| `pool` | positive int | Number of pools (docs previously showed boolean) |
-| `amenities` | JSON | Dict, e.g. `{ "wifi": true }` |
+| `pool` | positive int | Number of pools (integer count, not boolean) |
+| `outdoor_amenities` | JSON | Dict of outdoor features, e.g. `{ "pool": "private", "parking": true }` |
+| `interior_amenities` | JSON | Dict of interior features, e.g. `{ "wifi": true, "ac": true }` |
 | `latitude` | decimal(9,6) | Nullable |
 | `longitude` | decimal(9,6) | Nullable |
 | `place_id` | str(255) | Optional |
@@ -578,8 +579,9 @@ Nested serializer returns media list inline; there is **no separate `/media/` en
 | `assigned_agent` | FK(User) | Nullable, limited to role='agent' |
 | `created_at` | datetime | Auto set |
 | `updated_at` | datetime | Auto update |
-| `media` | reverse relation | List of `Media` objects (inline) |
-| Derived (serializer): `media_count`, `booking_count`, `price_display`, `property_stats`, `location_coords`, `created_by_name` |
+| `media_images` | reverse relation | List of simple PropertyImage objects: `{id, image}` |
+| `bedrooms_images` | reverse relation | List of simple BedroomImage objects: `{id, image}` |
+| Derived (serializer): `booking_count`, `price_display`, `property_stats`, `location_coords`, `created_by_name` |
 
 ---
 
@@ -606,6 +608,7 @@ Nested serializer returns media list inline; there is **no separate `/media/` en
     "slug": "luxury-beach-villa",
     "description": "Beautiful 5-bedroom villa with ocean views",
     "price": "750.00",
+    "price_display": "750.00",
     "booking_rate": {
       "booking": [
         {"day": 2, "price": 500}
@@ -618,11 +621,14 @@ Nested serializer returns media list inline; there is **no separate `/media/` en
     "add_guest": 10,
     "bedrooms": 5,
     "bathrooms": 4,
-    "has_pool": true,
-    "amenities": {
-      "wifi": true,
+    "pool": 1,
+    "outdoor_amenities": {
       "pool": "private",
       "parking": true
+    },
+    "interior_amenities": {
+      "wifi": true,
+      "ac": true
     },
     "latitude": "25.790700",
     "longitude": "-80.130000",
@@ -635,31 +641,27 @@ Nested serializer returns media list inline; there is **no separate `/media/` en
       {"role": "concierge", "name": "Jane Smith"}
     ],
     "calendar_link": "https://calendar.google.com/...",
+    "google_calendar_id": "abc123@group.calendar.google.com",
     "created_at": "2025-11-10T08:00:00Z",
     "updated_at": "2025-11-18T14:30:00Z",
     "assigned_agent": 8,
     "created_by_name": "Admin User",
-    "media": [
-      {
-        "id": 5,
-        "media_type": "image",
-        "category": "media",
-        "file": "/media/property_media/villa-1-main.jpg",
-        "file_url": "http://localhost:8888/media/property_media/villa-1-main.jpg",
-        "caption": "Main View",
-        "is_primary": true,
-        "order": 0
-      },
-      {
-        "id": 6,
-        "media_type": "image",
-        "category": "bedroom",
-        "file": "/media/property_media/villa-1-bedroom.jpg",
-        "file_url": "http://localhost:8888/media/property_media/villa-1-bedroom.jpg",
-        "caption": "Master Bedroom",
-        "is_primary": false,
-        "order": 1
-      }
+    "booking_count": 12,
+    "property_stats": {
+      "total_bookings": 12,
+      "pending": 2,
+      "approved": 8,
+      "rejected": 1,
+      "completed": 1,
+      "cancelled": 0
+    },
+    "media_images": [
+      {"id": 101, "image": "/media/properties/prop-1-main.jpg"},
+      {"id": 102, "image": "/media/properties/prop-1-exterior.jpg"}
+    ],
+    "bedrooms_images": [
+      {"id": 201, "image": "/media/properties/bedrooms/prop-1-master.jpg"},
+      {"id": 202, "image": "/media/properties/bedrooms/prop-1-guest.jpg"}
     ],
     "location_coords": {
       "lat": 25.7907,
@@ -713,14 +715,15 @@ add_guest=10
 bedrooms=5
 bathrooms=4
 pool=1
-amenities={"wifi": true, "pool": "private"}
+outdoor_amenities={"pool": "private", "parking": true}
+interior_amenities={"wifi": true, "ac": true}
 latitude=25.790700
 longitude=-80.130000
 assigned_agent=8
-media_files=<file1.jpg>
-media_files=<file2.jpg>
-media_metadata={"category":"media","caption":"Main View","is_primary":true,"order":0}
-media_metadata={"category":"bedroom","caption":"Master Bedroom","order":1}
+media_images=<file main.jpg>
+media_images=<file exterior.jpg>
+bedrooms_images=<file master.jpg>
+bedrooms_images=<file guest.jpg>
 ```
 
 **Required Fields:**
@@ -734,22 +737,16 @@ media_metadata={"category":"bedroom","caption":"Master Bedroom","order":1}
 | `bedrooms` | integer | Yes |
 | `bathrooms` | integer | Yes |
 
-**Media Files (Optional):**
-| Key | Purpose |
-|-----|---------|
-| `media_files` | Repeat for each file (image/video/pdf) |
-| `media_metadata` | Repeat JSON string matching each file (same order) |
-| Rule | Counts must match; only one can set `is_primary=true` |
+**Image Upload Rules:**
+| Key | Required | Purpose |
+|-----|----------|---------|
+| `media_images` | Yes (at least one) | General property images (cover + gallery) |
+| `bedrooms_images` | No | Specific bedroom photos |
 
-**Media Metadata Structure:**
-```json
-{
-  "category": "media|bedroom|bathroom|exterior|other",
-  "caption": "Optional description",
-  "is_primary": true,
-  "order": 0
-}
-```
+Notes:
+- There is currently NO need to supply separate metadata; files are stored directly.
+- First `media_images` file will typically be used as a de-facto primary image (no explicit `is_primary` field in this simplified model).
+- Legacy rich `Media` model exists but is not exposed by the current serializer.
 
 **Success Response (201 Created):**
 ```json
@@ -758,19 +755,16 @@ media_metadata={"category":"bedroom","caption":"Master Bedroom","order":1}
   "title": "Luxury Beach Villa",
   "slug": "luxury-beach-villa",
   "price": "750.00",
+  "price_display": "750.00",
   "status": "draft",
   "created_at": "2025-11-19T12:00:00Z",
   "created_by_name": "Admin User",
-  "media": [
-    {
-      "id": 25,
-      "media_type": "image",
-      "category": "media",
-      "file_url": "http://localhost:8888/media/property_media/villa-main.jpg",
-      "caption": "Main View",
-      "is_primary": true,
-      "order": 0
-    }
+  "media_images": [
+    {"id": 501, "image": "/media/properties/villa-main.jpg"},
+    {"id": 502, "image": "/media/properties/villa-exterior.jpg"}
+  ],
+  "bedrooms_images": [
+    {"id": 601, "image": "/media/properties/bedrooms/villa-master.jpg"}
   ]
 }
 ```
@@ -786,7 +780,7 @@ media_metadata={"category":"bedroom","caption":"Master Bedroom","order":1}
 - If both `latitude` and `longitude` are provided, they must be valid coordinates
 - Cannot provide only one coordinate (both or neither)
 - `assigned_agent` must be a user with `role='agent'`
-- Media files are automatically categorized by file extension
+- Must include at least one `media_images` file
 
 **Google Calendar Integration (If configured):**
 Property may store `google_calendar_id`. Creation flow in code (truncated in snippet) suggests attempt to create a calendar; if fails it silently continues.
@@ -809,9 +803,12 @@ Property may store `google_calendar_id`. Creation flow in code (truncated in sni
 {
   "price": "800.00",
   "status": "published",
-  "amenities": {
-    "wifi": true,
+  "outdoor_amenities": {
     "pool": "private",
+    "parking": true
+  },
+  "interior_amenities": {
+    "wifi": true,
     "hot_tub": true
   }
 }
@@ -1132,91 +1129,36 @@ GET /api/villas/properties/1/availability/?month=12&year=2025
 
 ---
 
-## 🎬 Media Handling
+## 🎬 Image Handling (Simplified Model)
 
-Media is inlined in property responses. There is **no separate media CRUD endpoint** in current `villas/urls.py`. Upload happens during property create (or future update if implemented). Remove older references to `/media/` endpoints.
+The current public serializer exposes ONLY two simple image arrays:
+- `media_images`: general property gallery
+- `bedrooms_images`: bedroom-specific images
 
-### Media Model Fields (Exact – from `villas/models.py`)
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `id` | integer | Unique media ID |
-| `media_type` | string | Auto-detected: `image`, `video`, `brochure`, `other` |
-| `category` | string | User-defined: `media`, `bedroom`, `bathroom`, `exterior`, `other` |
-| `file` | file | Uploaded file |
-| `file_url` | string | Full URL to access the file |
-| `caption` | string | Optional caption/description |
-| `is_primary` | boolean | Mark as primary/cover image |
-| `order` | integer | Display order (lower numbers first) |
-
-### Media Type Detection
-
-Files are automatically categorized by extension:
-- **Images:** `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`
-- **Videos:** `.mp4`, `.mov`, `.avi`, `.wmv`, `.mkv`
-- **Brochures:** `.pdf`, `.doc`, `.docx`
-- **Other:** Everything else
-
----
-
-### Upload Media During Property Creation
-
-Use repeated `media_files` & `media_metadata` form parts as shown earlier.
-
-**Request Body:**
-```
-title: "Villa Name"
-... (other property fields) ...
-media_files: [file1.jpg, file2.jpg, video1.mp4]
-media_metadata: ['{"category": "media", "caption": "Main View", "is_primary": true, "order": 0}', '{"category": "bedroom", "caption": "Bedroom", "order": 1}', '{"category": "other", "caption": "Property Tour", "order": 2}']
+Each item shape:
+```json
+{ "id": 101, "image": "/media/properties/...jpg" }
 ```
 
-**Important Rules:**
-1. Number of `media_files` must match number of `media_metadata` entries
-2. Each metadata entry is a JSON string
-3. Only ONE media can have `is_primary: true` (enforced at model level)
-4. Lower `order` values appear first
+There is a legacy `Media` model (with file type, category, caption, ordering, primary) still present in the codebase, but it is NOT exposed via the active `PropertySerializer`. If future versions re-enable rich media, this section will be expanded again.
 
----
+### Upload Rules
+1. At least one `media_images` file is required when creating a property.
+2. `bedrooms_images` files are optional.
+3. No additional metadata fields are accepted at this time.
+4. Images are stored under dedicated folders: `properties/` and `properties/bedrooms/`.
 
-### Media in Property Response Example
-
-When retrieving a property, media is included:
-
+### Potential Future Enhancement (Rich Media)
+If/when re-introduced, expect keys like `media_files` + `media_metadata` with structure:
 ```json
 {
-  "id": 1,
-  "title": "Property Name",
-  "media": [
-    {
-      "id": 5,
-      "media_type": "image",
-      "category": "media",
-      "file": "/media/property_media/villa-1-main.jpg",
-      "file_url": "http://localhost:8888/media/property_media/villa-1-main.jpg",
-      "caption": "Main View",
-      "is_primary": true,
-      "order": 0
-    },
-    {
-      "id": 6,
-      "media_type": "video",
-      "category": "other",
-      "file": "/media/property_media/villa-1-tour.mp4",
-      "file_url": "http://localhost:8888/media/property_media/villa-1-tour.mp4",
-      "caption": "Property Tour",
-      "is_primary": false,
-      "order": 2
-    }
-  ]
+  "category": "media|bedroom|bathroom|exterior|other",
+  "caption": "Optional description",
+  "is_primary": true,
+  "order": 0
 }
 ```
-
-**Media is ordered by:**
-1. `order` field (ascending)
-2. `id` field (ascending) as fallback
-
----
+But for now, integrations should rely solely on the simple arrays.
 
 ## 🗓️ Google Calendar Integration
 
@@ -1413,39 +1355,32 @@ class EastmondVillaAPI:
         response.raise_for_status()
         return response.json()
     
-    def create_property(self, property_data, media_files=None):
-        """Create property with optional media files"""
-        headers = {'Authorization': f'Bearer {self.access_token}'}
-        
-        if media_files:
-            # Multipart form data
-            files = []
-            media_metadata = []
-            
-            for i, (file_path, metadata) in enumerate(media_files):
-                files.append(('media_files', open(file_path, 'rb')))
-                import json
-                media_metadata.append(json.dumps(metadata))
-            
-            property_data['media_metadata'] = media_metadata
-            
-            response = requests.post(
-                f'{self.base_url}/villas/properties/',
-                headers=headers,
-                data=property_data,
-                files=files
-            )
-        else:
-            # JSON data only
-            headers['Content-Type'] = 'application/json'
-            response = requests.post(
-                f'{self.base_url}/villas/properties/',
-                headers=headers,
-                json=property_data
-            )
-        
-        response.raise_for_status()
-        return response.json()
+  def create_property(self, property_data, media_images=None, bedrooms_images=None):
+    """Create property using simplified image arrays.
+    media_images: list of file paths (required, at least one)
+    bedrooms_images: optional list of file paths
+    """
+    headers = {'Authorization': f'Bearer {self.access_token}'}
+
+    if media_images or bedrooms_images:
+      files = []
+      if media_images:
+        for path in media_images:
+          files.append(('media_images', open(path, 'rb')))
+      if bedrooms_images:
+        for path in bedrooms_images:
+          files.append(('bedrooms_images', open(path, 'rb')))
+      response = requests.post(
+        f'{self.base_url}/villas/properties/',
+        headers=headers,
+        data=property_data,
+        files=files
+      )
+    else:
+      raise ValueError("At least one media_images file is required.")
+
+    response.raise_for_status()
+    return response.json()
     
     # Admin endpoints
   def admin_list_users(self):
@@ -1536,7 +1471,7 @@ if __name__ == '__main__':
 
 ---
 
-### JavaScript (Fetch API) (Adjusted – removed wrong /accounts/ prefixes)
+### JavaScript (Fetch API) (Adjusted – simplified image upload)
 
 ```javascript
 const BASE_URL = 'http://localhost:8888/api';
@@ -1685,36 +1620,29 @@ class EastmondVillaAPI {
     return await response.json();
   }
 
-  async createProperty(propertyData, mediaFiles = []) {
+  async createProperty(propertyData, mediaImages = [], bedroomsImages = []) {
+    if (!mediaImages.length) {
+      throw new Error('At least one mediaImages file is required');
+    }
     const formData = new FormData();
-    
-    // Add property fields
     Object.keys(propertyData).forEach(key => {
-      if (typeof propertyData[key] === 'object') {
-        formData.append(key, JSON.stringify(propertyData[key]));
+      const val = propertyData[key];
+      if (typeof val === 'object' && val !== null) {
+        formData.append(key, JSON.stringify(val));
       } else {
-        formData.append(key, propertyData[key]);
+        formData.append(key, val);
       }
     });
-    
-    // Add media files
-    mediaFiles.forEach(({file, metadata}) => {
-      formData.append('media_files', file);
-      formData.append('media_metadata', JSON.stringify(metadata));
-    });
-    
+    mediaImages.forEach(file => formData.append('media_images', file));
+    bedroomsImages.forEach(file => formData.append('bedrooms_images', file));
     const response = await fetch(`${this.baseUrl}/villas/properties/`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`
-      },
+      headers: { 'Authorization': `Bearer ${this.accessToken}` },
       body: formData
     });
-    
     if (!response.ok) {
       throw new Error('Failed to create property');
     }
-    
     return await response.json();
   }
 }
@@ -1828,7 +1756,7 @@ curl -X POST http://localhost:8888/api/villas/bookings/ \
   }'
 ```
 
-**Create Property with Media:**
+**Create Property with Images:**
 ```bash
 curl -X POST http://localhost:8888/api/villas/properties/ \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
@@ -1841,10 +1769,11 @@ curl -X POST http://localhost:8888/api/villas/properties/ \
   -F "add_guest=10" \
   -F "bedrooms=5" \
   -F "bathrooms=4" \
-  -F "media_files=@/path/to/image1.jpg" \
-  -F "media_files=@/path/to/image2.jpg" \
-  -F 'media_metadata={"category":"media","caption":"Main View","is_primary":true,"order":0}' \
-  -F 'media_metadata={"category":"bedroom","caption":"Bedroom","order":1}'
+  -F 'outdoor_amenities={"pool": "private", "parking": true}' \
+  -F 'interior_amenities={"wifi": true, "ac": true}' \
+  -F "media_images=@/path/to/main.jpg" \
+  -F "media_images=@/path/to/exterior.jpg" \
+  -F "bedrooms_images=@/path/to/master.jpg"
 ```
 
 **Admin - List Users:**

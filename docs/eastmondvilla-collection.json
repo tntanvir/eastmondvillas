@@ -85,12 +85,14 @@
           {"key": "bedrooms", "value": "5", "type": "text"},
           {"key": "bathrooms", "value": "4", "type": "text"},
           {"key": "pool", "value": "1", "type": "text"},
-          {"key": "amenities", "value": "{\"wifi\": true, \"pool\": \"private\"}", "type": "text"},
+          {"key": "outdoor_amenities", "value": "{\"pool\": \"private\", \"parking\": true}", "type": "text"},
+          {"key": "interior_amenities", "value": "{\"wifi\": true, \"ac\": true}", "type": "text"},
           {"key": "latitude", "value": "25.790700", "type": "text"},
           {"key": "longitude", "value": "-80.130000", "type": "text"},
-          {"key": "media_files", "type": "file", "src": []},
-          {"key": "media_metadata", "value": "{\"category\":\"media\",\"caption\":\"Main View\",\"is_primary\":true,\"order\":0}", "type": "text"}
-        ]}, "url": {"raw": "{{base_url}}/api/villas/properties/", "host": ["{{base_url}}"], "path": ["api","villas","properties",""]}, "description": "Create property (media handled inline)."}},
+          {"key": "media_images", "type": "file", "src": []},
+          {"key": "media_images", "type": "file", "src": []},
+          {"key": "bedrooms_images", "type": "file", "src": []}
+        ]}, "url": {"raw": "{{base_url}}/api/villas/properties/", "host": ["{{base_url}}"], "path": ["api","villas","properties",""]}, "description": "Create property (at least one media_images required; bedrooms_images optional)."}},
         {"name": "Update Property", "request": {"method": "PATCH", "header": [{"key": "Content-Type", "value": "application/json"}], "body": {"mode": "raw", "raw": "{\n  \"price\": \"800.00\",\n  \"status\": \"pending_review\"\n}"}, "url": {"raw": "{{base_url}}/api/villas/properties/{{property_id}}/", "host": ["{{base_url}}"], "path": ["api","villas","properties","{{property_id}}",""]}}},
         {"name": "Delete Property", "request": {"method": "DELETE", "url": {"raw": "{{base_url}}/api/villas/properties/{{property_id}}/", "host": ["{{base_url}}"], "path": ["api","villas","properties","{{property_id}}",""]}}},
         {"name": "Availability (Month)", "request": {"method": "GET", "url": {"raw": "{{base_url}}/api/villas/properties/{{property_id}}/availability/?month=12&year=2025", "host": ["{{base_url}}"], "path": ["api","villas","properties","{{property_id}}","availability",""]}}}
@@ -110,7 +112,7 @@
     {
       "name": "📝 Notes",
       "item": [
-        {"name": "Media Handling", "request": {"method": "GET", "url": {"raw": "https://example.invalid/", "host": ["example","invalid"], "path": [""]}, "description": "Placeholder"}, "description": "Media files are uploaded only during property creation via multipart form. No standalone /media/ endpoints exist."}
+  {"name": "Image Handling", "request": {"method": "GET", "url": {"raw": "https://example.invalid/", "host": ["example","invalid"], "path": [""]}, "description": "Placeholder"}, "description": "Use media_images (required) and bedrooms_images (optional) for file uploads when creating a property. Legacy rich Media model not exposed; no standalone /media/ endpoints."}
       ]
     }
   ]
