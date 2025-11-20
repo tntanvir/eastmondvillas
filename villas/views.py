@@ -4,7 +4,7 @@ from rest_framework import viewsets, status, serializers
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from datetime import datetime, timedelta
 
 from . import google_calendar_service
@@ -244,6 +244,27 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
+    @action(detail=False, methods=['delete'])
+    def remove(self, request):
+        property_id = request.query_params.get('property_id')
+
+        if not property_id:
+            return Response({"detail": "property_id is required"}, status=400)
+        
+        if not property_id.isdigit():
+            return Response({"detail": "property_id must be an integer"}, status=400)
+
+        favorite = Favorite.objects.filter(
+            user=request.user,
+            property_id=property_id
+        ).first()
+
+        if not favorite:
+            return Response({"detail": "Favorite not found"}, status=404)
+
+        favorite.delete()
+        return Response({"detail": "Removed from favorites"}, status=200)
 
 
 
