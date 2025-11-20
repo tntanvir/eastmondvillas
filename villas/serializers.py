@@ -5,6 +5,22 @@ from datetime import date, datetime
 from . import google_calendar_service
 
 
+class FavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = ['id', 'property', 'user', 'created_at']
+        read_only_fields = ['user', 'created_at']
+
+    def validate(self, data):
+        property = data.get('property')
+        user = self.context['request'].user
+
+        if Favorite.objects.filter(property=property, user=user).exists():
+            raise serializers.ValidationError("This property is already in your favorites.")
+        return data
+
+
+
 class MediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Media
@@ -33,6 +49,8 @@ class PropertySerializer(serializers.ModelSerializer):
     property_stats = serializers.SerializerMethodField()
     media_images = PropertyImageSerializer(many=True, read_only=True)
     bedrooms_images = BedroomImageSerializer(many=True, read_only=True)
+    is_favorited = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Property
@@ -43,12 +61,18 @@ class PropertySerializer(serializers.ModelSerializer):
             'longitude', 'place_id', 'seo_title', 'seo_description',
             'signature_distinctions', 'staff', 'calendar_link', 'google_calendar_id',
             'created_at', 'updated_at', 'assigned_agent', 'created_by', 'created_by_name',
-            'booking_count', 'location_coords', 'property_stats', 'media_images', 'bedrooms_images'
+            'booking_count', 'location_coords', 'property_stats', 'media_images', 'bedrooms_images', 'is_favorited'
         ]
         read_only_fields = [
             'slug', 'created_by', 'created_by_name', 'booking_count', 'media_images', 'bedrooms_images',
             'created_at', 'updated_at', 'location_coords', 'price_display', 'property_stats'
         ]
+    
+    def get_is_favorited(self, obj):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            return any(fav.user_id == user.id for fav in obj.favorited_by.all())
+        return False
 
     def get_created_by_name(self, obj):
         return obj.created_by.name if obj.created_by else None
@@ -185,20 +209,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("You have already reviewed this property.")
         return data
 
-
-class FavoriteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Favorite
-        fields = ['id', 'property', 'user', 'created_at']
-        read_only_fields = ['user', 'created_at']
-
-    def validate(self, data):
-        property = data.get('property')
-        user = self.context['request'].user
-
-        if Favorite.objects.filter(property=property, user=user).exists():
-            raise serializers.ValidationError("This property is already in your favorites.")
-        return data
 
 
 
