@@ -44,7 +44,7 @@ class vila_list(APIView):
         return Response({"message": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
     
 
-class ContectUsView(APIView):
+class ContactUsView(APIView):
     def get(self, request,pk=None):
         if request.user.role == "admin" or request.user.is_superuser:
             if pk:
