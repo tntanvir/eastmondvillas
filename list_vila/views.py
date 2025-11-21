@@ -10,14 +10,15 @@ from .serializers import VilaListingSerializer,ContectUsSerializer
 
 class vila_list(APIView):
     def get(self, request,pk=None):
-        if pk:
-            vila = VilaListing.get_object_or_404(pk=pk)
-            serializer = VilaListingSerializer(vila)
+        if request.user.role == "admin" or request.user.is_superuser:
+            if pk:
+                vila = get_object_or_404(VilaListing,pk=pk)
+                serializer = VilaListingSerializer(vila)
+                return Response(serializer.data)
+            vila = VilaListing.objects.all()
+            serializer = VilaListingSerializer(vila, many=True)
             return Response(serializer.data)
-        vila = VilaListing.objects.all()
-        serializer = VilaListingSerializer(vila, many=True)
-        return Response(serializer.data)
-
+        return Response({"message": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
     def post(self,request):
         data = request.data
         serializer = VilaListingSerializer(data=data)
@@ -28,7 +29,7 @@ class vila_list(APIView):
     
     def put(self, request, pk):
         if request.user.role == "admin" or request.user.is_superuser:
-            vila = VilaListing.get_object_or_404(pk=pk)
+            vila = get_object_or_404(VilaListing,pk=pk)
             serializer = VilaListingSerializer(vila, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -37,7 +38,7 @@ class vila_list(APIView):
         return Response({"message": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
     def delete(self, request, pk):
         if request.user.role == "admin" or request.user.is_superuser:
-            vila = VilaListing.get_object_or_404(pk=pk)
+            vila = get_object_or_404(VilaListing,pk=pk)
             vila.delete()
             return Response({"message": "Vila deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         return Response({"message": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
@@ -47,7 +48,7 @@ class ContectUsView(APIView):
     def get(self, request,pk=None):
         if request.user.role == "admin" or request.user.is_superuser:
             if pk:
-                contect = ContectUs.objects.get_object_or_404(pk=pk)
+                contect = get_object_or_404(ContectUs,pk=pk)
                 serializer = ContectUsSerializer(contect)
                 return Response(serializer.data)
             contect = ContectUs.objects.all()
@@ -64,7 +65,7 @@ class ContectUsView(APIView):
     
     def put(self, request, pk):
         if request.user.role == "admin" or request.user.is_superuser:
-            contect = ContectUs.get_object_or_404(pk=pk)
+            contect = get_object_or_404(ContectUs,pk=pk)
             serializer = ContectUsSerializer(contect, data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -73,7 +74,7 @@ class ContectUsView(APIView):
         return Response({"message": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
     def delete(self, request, pk):
         if request.user.role == "admin" or request.user.is_superuser:
-            contect = ContectUs.get_object_or_404(pk=pk)
+            contect = get_object_or_404(ContectUs,pk=pk)
             contect.delete()
             return Response({"message": "Contect deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         return Response({"message": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
