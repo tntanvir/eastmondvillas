@@ -72,7 +72,7 @@ class PropertySerializer(serializers.ModelSerializer):
             'longitude', 'place_id', 'seo_title', 'seo_description',
             'signature_distinctions', 'staff', 'calendar_link', 'google_calendar_id',
             'created_at', 'updated_at', 'assigned_agent', 'created_by', 'created_by_name',
-            'booking_count', 'location_coords', 'property_stats', 'media_images', 'bedrooms_images', 'is_favorited'
+            'booking_count', 'location_coords', 'property_stats', 'media_images', 'bedrooms_images', 'is_favorited', 'check_in', 'check_out', 'rules_and_etiquette'
         ]
         read_only_fields = [
             'slug', 'created_by', 'created_by_name', 'booking_count', 'media_images', 'bedrooms_images',
