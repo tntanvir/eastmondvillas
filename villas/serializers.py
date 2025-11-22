@@ -12,18 +12,6 @@ class PropertyMiniSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'city', 'price', 'bedrooms', 'bathrooms', 'pool', 'outdoor_amenities', 'interior_amenities']
 
 
-class FavoriteSerializer(serializers.ModelSerializer):
-    property_details = PropertyMiniSerializer(source='property', read_only=True)
-    class Meta:
-        model = Favorite
-        fields = ['id', 'property', 'user', 'created_at', 'property_details']
-        read_only_fields = ['user', 'created_at', 'property_details']
-
-    def validate_property(self, value):
-        user = self.context['request'].user
-        if Favorite.objects.select_related('property', 'user').filter(property=value, user=user).exists():
-            raise serializers.ValidationError("This property is already in your favorites.")
-        return value
 
 
 
@@ -46,6 +34,22 @@ class BedroomImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = BedroomImage
         fields = ["id", "image"]
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    property_details = PropertyMiniSerializer(source='property', read_only=True)
+    media_images = PropertyImageSerializer(many=True, read_only=True)
+    bedrooms_images = BedroomImageSerializer(many=True, read_only=True)
+    class Meta:
+        model = Favorite
+        fields = ['id', 'property', 'user', 'created_at', 'property_details', 'media_images', 'bedrooms_images']
+        read_only_fields = ['user', 'created_at', 'property_details', 'media_images', 'bedrooms_images']
+
+    def validate_property(self, value):
+        user = self.context['request'].user
+        if Favorite.objects.select_related('property', 'user').filter(property=value, user=user).exists():
+            raise serializers.ValidationError("This property is already in your favorites.")
+        return value
 
 
 class PropertySerializer(serializers.ModelSerializer):
