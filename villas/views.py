@@ -127,7 +127,7 @@ class BookingViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
     
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user, status=Booking.StatusType.PENDING)
+        serializer.save(user=self.request.user, status=Booking.STATUS.Pending)
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
