@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Property, Media, Booking, PropertyImage, BedroomImage, Review, ReviewImage, Favorite
+from .models import Property, Media, Booking, PropertyImage, BedroomImage, Review, ReviewImage, Favorite, DailyAnalytics
 from accounts.models import User
 from datetime import date, datetime
 from . import google_calendar_service
@@ -232,6 +232,23 @@ class ReviewSerializer(serializers.ModelSerializer):
         return data
 
 
+class DailyAnalyticsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailyAnalytics
+        fields = ['id', 'date', 'views', 'inquiries', 'bookings', 'downloads', 'property']
+        read_only_fields = ['id', 'property']
+    
+    def validate_date(self, value):
+        if value > date.today():
+            raise serializers.ValidationError("Date cannot be in the future.")
+        return value
+    
+    def validate(self, data):
+        property = self.context['property']
+        date_value = data.get('date')
 
+        if DailyAnalytics.objects.filter(property=property, date=date_value).exists():
+            raise serializers.ValidationError("Analytics for this property on the given date already exists.")
+        return data
 
         
