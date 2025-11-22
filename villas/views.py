@@ -6,6 +6,7 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, action
 from datetime import datetime, timedelta
+from django.db.models import Exists, OuterRef
 
 from . import google_calendar_service
 
@@ -25,8 +26,10 @@ class PropertyViewSet(viewsets.ModelViewSet):
         
         user = self.request.user
 
+        queryset = Property.objects.prefetch_related("media_images", "bedrooms_images")
+
         if user.is_authenticated:
-            queryset = Property.objects.prefetch_related('favorited_by')
+            queryset = queryset.annotate(is_favorited=Exists(Favorite.objects.filter(property=OuterRef('pk'), user=user))).prefetch_related('favorited_by')
 
         if not user.is_authenticated:
             return Property.objects.filter(status=Property.StatusType.PUBLISHED).order_by('-created_at')
@@ -36,7 +39,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         if user.role == 'agent':
             return Property.objects.filter(assigned_agent=user).order_by('-created_at')
         
-        return Property.objects.filter(status=Property.StatusType.PUBLISHED).order_by('-created_at')
+        return queryset.objects.filter(status=Property.StatusType.PUBLISHED).order_by('-created_at')
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -211,6 +214,7 @@ def get_property_availability(request, property_pk):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get_queryset(self):
         user = self.request.user
@@ -222,12 +226,27 @@ class ReviewViewSet(viewsets.ModelViewSet):
         serializer.save(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
+        try:
+            with transaction.atomic():
+                serializer = self.get_serializer(data=request.data)
+                serializer.is_valid(raise_exception=True)
+                review_instance = serializer.save(user=request.user)
+
+                images = request.FILES.getlist('images')
+                if len(images) > 5:
+                    return Response({"error": "You can upload a maximum of 5 images."}, status=status.HTTP_400_BAD_REQUEST)
+
+                for img in images:
+                    if img and getattr(img, 'size', 0) > 0:
+                        ReviewImage.objects.create(review=review_instance, image=img)
+                
+                final_serializer = self.get_serializer(review_instance).data
+                return Response(final_serializer, status=status.HTTP_201_CREATED)
+        except serializers.ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
 class FavoriteViewSet(viewsets.ModelViewSet):
     serializer_class = FavoriteSerializer
     permission_classes = [IsAuthenticated]
@@ -235,7 +254,10 @@ class FavoriteViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return Favorite.objects.filter(
             user=self.request.user
-        ).select_related('property')
+        ).select_related('property').prefetch_related(
+        'property__media_images',
+        'property__bedrooms_images'
+    )
 
     @action(detail=False, methods=['post'])
     def toggle(self, request):
