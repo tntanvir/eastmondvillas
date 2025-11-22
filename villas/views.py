@@ -8,6 +8,10 @@ from rest_framework.decorators import api_view, permission_classes, action
 from datetime import datetime, timedelta
 from django.db.models import Exists, OuterRef
 
+from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import SearchFilter, OrderingFilter
+
 from . import google_calendar_service
 
 
@@ -17,10 +21,27 @@ from .serializers import PropertySerializer , BookingSerializer, MediaSerializer
 
 from accounts.permissions import IsAdminOrManager, IsAgentWithFullAccess, IsAssignedAgentReadOnly, IsOwnerOrAdminOrManager
 
+
+from rest_framework.pagination import PageNumberPagination
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+from .filters import PropertyFilter
+
 class PropertyViewSet(viewsets.ModelViewSet):
 
     serializer_class = PropertySerializer
     parser_classes = [MultiPartParser, FormParser]
+    pagination_class = StandardResultsSetPagination
+    filter_backends = [SearchFilter, OrderingFilter]
+    filterset_class = PropertyFilter
+    # search_fields = ['title', 'city', 'description', 'interior_amenities', 'outdoor_amenities']
+    # ordering_fields = ['price', 'created_at', 'bedrooms', 'bathrooms']
+    
 
     def get_queryset(self):
         
@@ -39,7 +60,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         if user.role == 'agent':
             return Property.objects.filter(assigned_agent=user).order_by('-created_at')
         
-        return queryset.objects.filter(status=Property.StatusType.PUBLISHED).order_by('-created_at')
+        return queryset.filter(status=Property.StatusType.PUBLISHED).order_by('-created_at')
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
