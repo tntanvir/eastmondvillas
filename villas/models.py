@@ -275,4 +275,18 @@ class Favorite(models.Model):
     def __str__(self):
         return f"{self.user} favorited {self.property.title}"
     
-    
+
+class DailyAnalytics(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="daily_analytics")
+    date = models.DateField()
+
+    views = models.PositiveIntegerField(default=0)
+    inquiries = models.PositiveIntegerField(default=0)
+    bookings = models.PositiveIntegerField(default=0)
+    downloads = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('property', 'date')
+        ordering = ['-date']
+
+
