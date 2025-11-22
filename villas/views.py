@@ -127,6 +127,12 @@ class PropertyViewSet(viewsets.ModelViewSet):
 
 class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = BookingSerializer
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ['status', 'property__id', 'user__id']
+    search_fields = ['property__title', 'user__username', 'user__email']
+    ordering_fields = ['check_in', 'check_out', 'created_at', 'status']
+    pagination_class = StandardResultsSetPagination
+
 
     def get_queryset(self):
         user = self.request.user
