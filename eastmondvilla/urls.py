@@ -27,6 +27,7 @@ urlpatterns = [
     path('api/list_vila/', include('list_vila.urls')),
     path('api/notifications/', include('notifications.urls')),
     path('api/announcements/', include('announcements.urls')),
+    path('api/resources/', include('resources.urls')),
 
 
     path('schema/', SpectacularAPIView.as_view(), name='schema'),  # The OpenAPI schema
