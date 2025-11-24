@@ -199,6 +199,7 @@ class BookingViewSet(viewsets.ModelViewSet):
                         status=400
                     )
                 booking.status = new_status
+                update_daily_analytics(booking.property, "bookings")
 
             elif new_status in ['cancelled', 'rejected', 'completed', 'pending']:
                 booking.status = new_status
