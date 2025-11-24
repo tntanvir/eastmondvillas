@@ -2,7 +2,6 @@ from rest_framework import serializers
 from .models import Property, Media, Booking, PropertyImage, BedroomImage, Review, ReviewImage, Favorite, DailyAnalytics
 from accounts.models import User
 from datetime import date, datetime
-from . import google_calendar_service
 from .utils import validate_date_range, is_valid_date
 
 
@@ -85,7 +84,7 @@ class PropertySerializer(serializers.ModelSerializer):
             'listing_type', 'status', 'address', 'city', 'add_guest',
             'bedrooms', 'bathrooms', 'pool', 'outdoor_amenities','interior_amenities', 'latitude',
             'longitude', 'place_id', 'seo_title', 'seo_description',
-            'signature_distinctions', 'staff', 'calendar_link', 'google_calendar_id',
+            'signature_distinctions', 'staff', 'calendar_link',
             'created_at', 'updated_at', 'assigned_agent', 'created_by', 'created_by_name',
             'booking_count', 'location_coords', 'property_stats', 'media_images', 'bedrooms_images', 'is_favorited', 'check_in', 'check_out', 'rules_and_etiquette'
         ]
@@ -168,10 +167,10 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = [
             'id', 'property', 'full_name', 'email', 'phone', 'check_in', 'check_out',
-            'total_price', 'user', 'status', 'google_event_id', 'created_at',
+            'total_price', 'user', 'status', 'created_at',
             'property_details', 'user_details'
         ]
-        read_only_fields = ['user', 'status', 'google_event_id', 'created_at']
+        read_only_fields = ['user', 'status', 'created_at']
         extra_kwargs = {
             'property': {'write_only': True}
         }

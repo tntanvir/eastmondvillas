@@ -15,8 +15,6 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
 
-from . import google_calendar_service
-
 
 from .models import Property, Media, Booking, PropertyImage, BedroomImage, Review, ReviewImage, Favorite
 from .serializers import PropertySerializer , BookingSerializer, MediaSerializer, PropertyImageSerializer, BedroomImageSerializer, ReviewSerializer, ReviewImageSerializer, FavoriteSerializer
@@ -95,8 +93,6 @@ class PropertyViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         property_instance = serializer.save(created_by=self.request.user)
         try:
-            calendar_id = google_calendar_service.create_calendar_for_property(property_instance)
-            property_instance.google_calendar_id = calendar_id
             property_instance.save()
         except Exception as e:
             print(f"Could not create Google Calendar for {property_instance.title}: {e}")
