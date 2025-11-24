@@ -11,11 +11,6 @@ class PropertyMiniSerializer(serializers.ModelSerializer):
         model = Property
         fields = ['id', 'title', 'city', 'price', 'bedrooms', 'bathrooms', 'pool', 'outdoor_amenities', 'interior_amenities']
 
-
-
-
-
-
 class MediaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Media
