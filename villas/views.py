@@ -34,6 +34,8 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 from .filters import PropertyFilter
 
+# Property ViewSet
+
 class PropertyViewSet(viewsets.ModelViewSet):
 
     serializer_class = PropertySerializer
@@ -136,7 +138,15 @@ class PropertyViewSet(viewsets.ModelViewSet):
         final_serializer = self.get_serializer(property_instance)
         headers = self.get_success_headers(final_serializer.data)
         return Response(final_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
-    
+
+def property_downloaded(request, pk):
+    try:
+        prop = Property.objects.get(pk=pk)
+    except Property.DoesNotExist:
+        return Response({"error": "Property not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    update_daily_analytics(prop, "downloads")
+    return Response({"detail": "Download recorded."}, status=status.HTTP_200_OK) 
 
 class BookingViewSet(viewsets.ModelViewSet):
     serializer_class = BookingSerializer
