@@ -281,13 +281,16 @@ class DailyAnalytics(models.Model):
     date = models.DateField()
 
     views = models.PositiveIntegerField(default=0)
-    inquiries = models.PositiveIntegerField(default=0)
     bookings = models.PositiveIntegerField(default=0)
     downloads = models.PositiveIntegerField(default=0)
 
     class Meta:
         unique_together = ('property', 'date')
         ordering = ['-date']
+
+    def __str__(self):
+        return f"Analytics for {self.property.title} on {self.date}"
+    
 
 
 
