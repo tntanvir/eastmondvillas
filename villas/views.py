@@ -5,10 +5,11 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, action
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from calendar import monthrange
 from django.db.models import Exists, OuterRef
 
-from .utils import update_daily_analytics
+from .utils import update_daily_analytics, validate_date_range
 
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
@@ -189,36 +190,30 @@ class BookingViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         booking = self.get_object()
         new_status = request.data.get('status')
-        if new_status and new_status != booking.status:
-            if new_status == 'approved':
-                try:
-                    event_id = google_calendar_service.create_event_for_booking(booking.property.google_calendar_id, booking)
-                    booking.google_event_id = event_id
-                    booking.status = new_status
-                    update_daily_analytics(booking.property, "bookings")
-                except Exception as e:
-                    return Response({"error": f"Failed to create Google Calendar event: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            elif new_status in ['cancelled', 'rejected'] and booking.google_event_id:
-                google_calendar_service.delete_event_for_booking(booking.property.google_calendar_id, booking.google_event_id)
-                booking.google_event_id = None
-                booking.status = new_status
-        
-        booking.save() 
-        
-        return super().update(request, *args, **kwargs)
-    
 
-    def destroy(self, request, *args, **kwargs):
-        booking = self.get_object()
-        
-        if booking.google_event_id:
-            google_calendar_service.delete_event_for_booking(
-                booking.property.google_calendar_id, 
-                booking.google_event_id
-            )
-        
-        self.perform_destroy(booking)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        if not new_status:
+            return Response({"error": "Status required"}, status=400)
+
+        if new_status != booking.status:
+
+            if new_status == 'approved':
+                if validate_date_range(booking.property, booking.check_in, booking.check_out):
+                    return Response(
+                        {"error": "The selected date range overlaps with existing bookings or is invalid."},
+                        status=400
+                    )
+                booking.status = new_status
+
+            elif new_status in ['cancelled', 'rejected', 'completed', 'pending']:
+                booking.status = new_status
+            else:
+                return Response({"error": "Invalid status"}, status=400)
+            booking.save()
+
+        # return updated instance ONLY
+        serializer = self.get_serializer(booking)
+        return Response(serializer.data, status=200)
+    
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -228,39 +223,33 @@ def get_property_availability(request, property_pk):
     except Property.DoesNotExist:
         return Response({"error": "Property not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    if not prop.google_calendar_id:
-        return Response({"error": "Booking calendar is not configured for this property."}, status=status.HTTP_400_BAD_REQUEST)
-
     try:
         month = int(request.query_params.get('month', datetime.now().month))
         year = int(request.query_params.get('year', datetime.now().year))
     except (ValueError, TypeError):
         return Response({"error": "Invalid month or year parameter."}, status=status.HTTP_400_BAD_REQUEST)
-    
-    start_of_month = datetime(year, month, 1)
-    next_month_start = (start_of_month.replace(day=28) + timedelta(days=4)).replace(day=1)
-    end_of_month = next_month_start - timedelta(days=1)
 
-    try:
-        events_result = google_calendar_service.service.events().list(
-            calendarId=prop.google_calendar_id,
-            timeMin=start_of_month.isoformat() + 'Z',
-            timeMax=end_of_month.isoformat() + 'Z',
-            singleEvents=True, 
-            orderBy='startTime'
-        ).execute()
-    except Exception as e:
-        return Response({"error": f"Could not fetch calendar events: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
+    start_of_month = date(year, month, 1)
+    last_day = monthrange(year, month)[1]
+    end_of_month = date(year, month, last_day)
+
+    bookings = Booking.objects.filter(
+        property=prop,
+        status__in=['approved'],
+        check_in__lte=end_of_month,
+        check_out__gte=start_of_month
+    )
+
     booked_dates = []
-    for event in events_result.get('items', []):
-        if 'date' in event['start']:
-            start_date_str = event['start']['date']
-            end_date = datetime.fromisoformat(event['end']['date']) - timedelta(days=1)
-            end_date_str = end_date.strftime('%Y-%m-%d')
-            
-            booked_dates.append({'start': start_date_str, 'end': end_date_str})
-        
+    for booking in bookings:
+        start = max(booking.check_in, start_of_month)
+        end = min(booking.check_out, end_of_month)
+
+        booked_dates.append({
+            "start": start.strftime('%Y-%m-%d'),
+            "end": end.strftime('%Y-%m-%d')
+        })
+
     return Response(booked_dates, status=status.HTTP_200_OK)
 
 
