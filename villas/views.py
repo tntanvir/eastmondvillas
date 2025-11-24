@@ -8,6 +8,8 @@ from rest_framework.decorators import api_view, permission_classes, action
 from datetime import datetime, timedelta
 from django.db.models import Exists, OuterRef
 
+from utils import update_daily_analytics
+
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
@@ -60,7 +62,18 @@ class PropertyViewSet(viewsets.ModelViewSet):
         if user.role == 'agent':
             return Property.objects.filter(assigned_agent=user).order_by('-created_at')
         
+        
+        
         return queryset.filter(status=Property.StatusType.PUBLISHED).order_by('-created_at')
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+
+        # Update daily analytics for views
+        update_daily_analytics(instance, "views")
+
+        return Response(serializer.data)
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
