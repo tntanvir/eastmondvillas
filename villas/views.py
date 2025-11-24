@@ -1,6 +1,6 @@
 from django.db import transaction
 import json
-from rest_framework import viewsets, status, serializers
+from rest_framework import viewsets, status, serializers, filters
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -31,6 +31,20 @@ class StandardResultsSetPagination(PageNumberPagination):
 
 
 from .filters import PropertyFilter
+from datetime import datetime
+
+from django.db.models import Q
+
+
+
+
+
+
+
+
+
+
+
 
 class PropertyViewSet(viewsets.ModelViewSet):
 
@@ -124,8 +138,8 @@ class PropertyViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(final_serializer.data)
         return Response(final_serializer.data, status=status.HTTP_201_CREATED, headers=headers)
     
-
 class BookingViewSet(viewsets.ModelViewSet):
+   
     serializer_class = BookingSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ['status', 'property__id', 'user__id']
@@ -134,14 +148,50 @@ class BookingViewSet(viewsets.ModelViewSet):
     pagination_class = StandardResultsSetPagination
 
 
+    # optional: you can leave this out; we override filter_queryset anyway
+    # filter_backends = []
+
     def get_queryset(self):
         user = self.request.user
+
         if not user.is_authenticated:
-            return Booking.objects.none()
-        if user.role in ['admin', 'manager']:
-            return Booking.objects.all().select_related('property', 'user')
-        return Booking.objects.filter(user=user).select_related('property', 'user')
-    
+            queryset = Booking.objects.none()
+        elif getattr(user, "role", None) in ["admin", "manager"]:
+            queryset = Booking.objects.all().select_related("property", "user")
+        else:
+            queryset = Booking.objects.filter(user=user).select_related("property", "user")
+
+        return queryset
+
+    def filter_queryset(self, queryset):
+        """
+        Completely bypass DRF's DEFAULT_FILTER_BACKENDS (SearchFilter, etc.)
+        and implement our own ?search= logic.
+        """
+        search = self.request.query_params.get("search")
+        if not search:
+            return queryset
+
+        # Try to parse search as date YYYY-MM-DD
+        date_value = None
+        try:
+            date_value = datetime.strptime(search, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
+        # Text search
+        q = (
+            Q(full_name__icontains=search) |
+            Q(email__icontains=search) |
+            Q(phone__icontains=search)
+        )
+
+        # If looks like a date, include check_in / check_out
+        if date_value:
+            q |= Q(check_in=date_value) | Q(check_out=date_value)
+
+        return queryset.filter(q)
+
     def get_permissions(self):
         if self.action == 'create':
             permission_classes = [IsAuthenticated]
@@ -149,7 +199,7 @@ class BookingViewSet(viewsets.ModelViewSet):
             permission_classes = [IsOwnerOrAdminOrManager]
         elif self.action in ['update', 'partial_update', 'destroy']:
             permission_classes = [IsAdminOrManager]
-        else: # list action
+        else:  # list action
             permission_classes = [IsAuthenticated]
         return [permission() for permission in permission_classes]
     
@@ -166,33 +216,43 @@ class BookingViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         booking = self.get_object()
         new_status = request.data.get('status')
+
         if new_status and new_status != booking.status:
             if new_status == 'approved':
                 try:
-                    event_id = google_calendar_service.create_event_for_booking(booking.property.google_calendar_id, booking)
+                    event_id = google_calendar_service.create_event_for_booking(
+                        booking.property.google_calendar_id,
+                        booking
+                    )
                     booking.google_event_id = event_id
                 except Exception as e:
-                    return Response({"error": f"Failed to create Google Calendar event: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                    return Response(
+                        {"error": f"Failed to create Google Calendar event: {e}"},
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    )
             elif new_status in ['cancelled', 'rejected'] and booking.google_event_id:
-                google_calendar_service.delete_event_for_booking(booking.property.google_calendar_id, booking.google_event_id)
+                google_calendar_service.delete_event_for_booking(
+                    booking.property.google_calendar_id,
+                    booking.google_event_id
+                )
                 booking.google_event_id = None
         
-        booking.save() 
-        
+        booking.save()
         return super().update(request, *args, **kwargs)
     
 
     def destroy(self, request, *args, **kwargs):
         booking = self.get_object()
-        
+
         if booking.google_event_id:
             google_calendar_service.delete_event_for_booking(
-                booking.property.google_calendar_id, 
+                booking.property.google_calendar_id,
                 booking.google_event_id
             )
         
         self.perform_destroy(booking)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
