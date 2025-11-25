@@ -245,7 +245,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 class DailyAnalyticsSerializer(serializers.ModelSerializer):
     class Meta:
         model = DailyAnalytics
-        fields = ['id', 'date', 'views', 'inquiries', 'bookings', 'downloads', 'property']
+        fields = ['id', 'date', 'views', 'bookings', 'downloads', 'property']
         read_only_fields = ['id', 'property']
     
     def validate_date(self, value):
