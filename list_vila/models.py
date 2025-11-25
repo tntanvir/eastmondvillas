@@ -1,6 +1,6 @@
 from django.utils import timezone
 from django.db import models
-
+from auditlog.registry import auditlog
 
 
 
@@ -30,3 +30,8 @@ class ContectUs(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     def __str__(self):
         return f'{self.name} - {self.email}'
+
+
+
+auditlog.register(VilaListing)
+auditlog.register(ContectUs)

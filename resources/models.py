@@ -1,5 +1,5 @@
 from django.db import models
-
+from auditlog.registry import auditlog
 
 class Resource(models.Model):
 
@@ -24,3 +24,6 @@ class Resource(models.Model):
 
     def __str__(self):
         return self.title
+
+
+auditlog.register(Resource)

@@ -14,7 +14,7 @@ from .utils import update_daily_analytics, validate_date_range
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter, OrderingFilter
-
+from auditlog.registry import auditlog
 
 from .models import Property, Media, Booking, PropertyImage, BedroomImage, Review, ReviewImage, Favorite
 from .serializers import PropertySerializer , BookingSerializer, MediaSerializer, PropertyImageSerializer, BedroomImageSerializer, ReviewSerializer, ReviewImageSerializer, FavoriteSerializer
@@ -408,4 +408,13 @@ class DeshboardViewApi(APIView):
             "users": users
         },status=status.HTTP_200_OK)
         
-        
+
+
+auditlog.register(Property)
+auditlog.register(Media)
+auditlog.register(Booking)
+auditlog.register(PropertyImage)
+auditlog.register(BedroomImage)
+auditlog.register(Review)
+auditlog.register(ReviewImage)
+auditlog.register(Favorite)

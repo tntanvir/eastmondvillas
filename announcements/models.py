@@ -1,5 +1,5 @@
 from django.db import models
-
+from auditlog.registry import auditlog
 
 class Announcement(models.Model):
     title = models.CharField(max_length=255)
@@ -29,3 +29,7 @@ class FileUpload(models.Model):
 
     def __str__(self):
         return f'{self.id} - {self.file.name}'
+
+
+auditlog.register(Announcement)
+auditlog.register(FileUpload)
