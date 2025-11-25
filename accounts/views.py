@@ -5,7 +5,7 @@ from django.shortcuts import get_object_or_404
 from django.db import utils as db_utils
 
 from .models import User
-from .serializers import AdminUserSerializer
+from .serializers import AdminUserSerializer, UserUpdateSerializer
 from .permissions import IsAdmin
 
 
@@ -71,3 +71,15 @@ def get_tokens_for_user(user):
         "access_expires_in": refresh.access_token.lifetime.total_seconds(),
         "refresh_expires_in": refresh.lifetime.total_seconds(),
     }
+
+
+
+from rest_framework.permissions import IsAuthenticated
+
+
+class UserUpdateView(generics.UpdateAPIView):
+    serializer_class = UserUpdateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
