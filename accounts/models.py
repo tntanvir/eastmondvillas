@@ -64,6 +64,7 @@ class User(AbstractUser, PermissionsMixin):
         ('full_access','Full Access'),
     )
     email = models.EmailField(unique=True)
+    image = models.ImageField(upload_to='user_images/', blank=True, null=True)
     name = models.CharField(max_length=255)
     is_verified = models.BooleanField(default=False)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="customer")
