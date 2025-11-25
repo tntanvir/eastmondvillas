@@ -65,7 +65,7 @@ class Property(models.Model):
     calendar_link = models.URLField(blank=True, null=True, help_text="Link to external booking calendar (e.g., Google Calendar)")
 
     # google  
-    google_calendar_id = models.CharField(max_length=255, blank=True, null=True, help_text="The ID of the Google Calendar for this property.")
+    # google_calendar_id = models.CharField(max_length=255, blank=True, null=True, help_text="The ID of the Google Calendar for this property.")
 
     check_in = models.CharField(blank=True, null=True, help_text="Standard check-in time.")
     check_out = models.CharField(blank=True, null=True, help_text="Standard check-out time.")

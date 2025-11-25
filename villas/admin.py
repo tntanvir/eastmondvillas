@@ -206,7 +206,7 @@ class BookingAdmin(ModelAdmin):
     
     list_editable = ('status',)
     
-    readonly_fields = ('created_at', 'duration', 'google_event_id')
+    readonly_fields = ('created_at', 'duration',)
     
     fieldsets = (
         ('Booking Details', {
@@ -233,7 +233,7 @@ class BookingAdmin(ModelAdmin):
         }),
         ('Integration & Metadata', {
             'fields': (
-                'google_event_id',
+                
                 'created_at',
             ),
             'classes': ('collapse',)

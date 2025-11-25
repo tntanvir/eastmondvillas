@@ -2,7 +2,7 @@ from rest_framework import serializers
 from .models import Property, Media, Booking, PropertyImage, BedroomImage, Review, ReviewImage, Favorite, DailyAnalytics
 from accounts.models import User
 from datetime import date, datetime
-from . import google_calendar_service
+from .utils import validate_date_range, is_valid_date
 
 
 
@@ -10,11 +10,6 @@ class PropertyMiniSerializer(serializers.ModelSerializer):
     class Meta:
         model = Property
         fields = ['id', 'title', 'city', 'price', 'bedrooms', 'bathrooms', 'pool', 'outdoor_amenities', 'interior_amenities']
-
-
-
-
-
 
 class MediaSerializer(serializers.ModelSerializer):
     class Meta:
@@ -84,7 +79,7 @@ class PropertySerializer(serializers.ModelSerializer):
             'listing_type', 'status', 'address', 'city', 'add_guest',
             'bedrooms', 'bathrooms', 'pool', 'outdoor_amenities','interior_amenities', 'latitude',
             'longitude', 'place_id', 'seo_title', 'seo_description',
-            'signature_distinctions', 'staff', 'calendar_link', 'google_calendar_id',
+            'signature_distinctions', 'staff', 'calendar_link',
             'created_at', 'updated_at', 'assigned_agent', 'created_by', 'created_by_name',
             'booking_count', 'location_coords', 'property_stats', 'media_images', 'bedrooms_images', 'is_favorited', 'check_in', 'check_out', 'rules_and_etiquette'
         ]
@@ -167,10 +162,10 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = [
             'id', 'property', 'full_name', 'email', 'phone', 'check_in', 'check_out',
-            'total_price', 'user', 'status', 'google_event_id', 'created_at',
+            'total_price', 'user', 'status', 'created_at',
             'property_details', 'user_details'
         ]
-        read_only_fields = ['user', 'status', 'google_event_id', 'created_at']
+        read_only_fields = ['user', 'status', 'created_at']
         extra_kwargs = {
             'property': {'write_only': True}
         }
@@ -180,28 +175,43 @@ class BookingSerializer(serializers.ModelSerializer):
         check_out = data.get('check_out')
         prop = data.get('property')
 
+        if check_in is None or check_out is None:
+            raise serializers.ValidationError("Both check-in and check-out dates are required.")
+        
+        if check_in == check_out:
+            print("Check-in and check-out dates cannot be the same.")
+            print(check_in, check_out)
+            raise serializers.ValidationError("Check-in and check-out dates cannot be the same.")
+        
+        if check_in :
+            is_valid = is_valid_date(check_in)
+            if not is_valid:
+                raise serializers.ValidationError({"check_in": "Check-in date is invalid."})
+        if check_out :
+            is_valid = is_valid_date(check_out)
+            if not is_valid:
+                raise serializers.ValidationError({"check_out": "Check-out date is invalid."})
+            
+
         if check_in and check_out and check_in >= check_out:
             raise serializers.ValidationError({"check_out": "Check-out date must be after check-in date."})
         if check_in and check_in < date.today():
             raise serializers.ValidationError({"check_in": "Check-in date cannot be in the past."})
+        
+        validate_date_range(prop, check_in, check_out)
 
-        # Only check calendar availability if property has a calendar configured
-        if check_in and check_out and prop and prop.google_calendar_id:
-            start_time = datetime.combine(check_in, datetime.min.time())
-            end_time = datetime.combine(check_out, datetime.max.time())
-            try:
-                is_available = google_calendar_service.check_availability(
-                    prop.google_calendar_id,
-                    start_time,
-                    end_time
-                )
-                if not is_available:
-                    raise serializers.ValidationError({
-                        "non_field_errors": ["The selected dates are not available for this property. Please choose different dates."]
-                    })
-            except Exception as e:
-                import logging
-                logging.getLogger(__name__).warning(f"Could not verify availability: {e}")
+        if validate_date_range(prop, check_in, check_out):
+            raise serializers.ValidationError({
+                "non_field_errors": ["The selected dates are not available for this property. Please choose different dates."]
+            })
+        
+        # check_availability = self.context.get('check_availability', True)
+        # if check_availability:
+        #     is_unavailable = validate_date_range(prop, check_in, check_out)
+        #     if is_unavailable:
+        #         raise serializers.ValidationError({
+        #             "non_field_errors": ["The selected dates are not available for this property. Please choose different dates."]
+        #         })
         return data
 
 
