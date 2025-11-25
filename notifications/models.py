@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 User = get_user_model()
+from auditlog.registry import auditlog
+
 class Notification(models.Model):
     user = models.ForeignKey(User, related_name="notifications", on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
@@ -14,3 +16,6 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification to {self.user.email}: {self.title}"
+
+
+auditlog.register(Notification)

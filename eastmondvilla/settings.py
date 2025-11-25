@@ -61,7 +61,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'channels',
     'channels_redis',
-   
+    'auditlog',
 
 
     # local apps
@@ -71,6 +71,7 @@ INSTALLED_APPS = [
     'notifications',
     'announcements',
     'resources',
+    'activityLog',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
