@@ -555,35 +555,6 @@ class AnalyticsSummaryView(APIView):
         })
 
 
-class AgentsAnalyticsListView(APIView):
-
-    def get(self, request):
-
-        agents_data = (
-            User.objects.filter(role="agent")
-            .annotate(
-                total_properties_added=Count("assigned_villas", distinct=True),
-                total_views=Sum("assigned_villas__daily_analytics__views"),
-                total_downloads=Sum("assigned_villas__daily_analytics__downloads"),
-                total_bookings=Sum("assigned_villas__daily_analytics__bookings"),
-            )
-        )
-
-        result = []
-        for agent in agents_data:
-            result.append({
-                "agent_id": agent.id,
-                "agent_name": agent.name,
-                "total_properties_added": agent.total_properties_added or 0,
-                "total_views": agent.total_views or 0,
-                "total_downloads": agent.total_downloads or 0,
-                "total_bookings": agent.total_bookings or 0,
-            })
-
-        return Response(result)
-
-
-
 
 auditlog.register(Property)
 auditlog.register(Media)
