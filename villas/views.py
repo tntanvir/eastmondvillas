@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes, action
 from datetime import datetime, timedelta, date
 from calendar import monthrange
-from django.db.models import Exists, OuterRef
+from django.db.models import Exists, OuterRef, F, Count, Avg, Sum, Q
 
 from .utils import update_daily_analytics, validate_date_range
 
@@ -35,7 +35,6 @@ class StandardResultsSetPagination(PageNumberPagination):
 from .filters import PropertyFilter
 from datetime import datetime
 
-from django.db.models import Q
 from rest_framework.views import APIView
 
 from django.contrib.auth import get_user_model
@@ -66,7 +65,7 @@ class PropertyViewSet(viewsets.ModelViewSet):
         
         user = self.request.user
 
-        queryset = Property.objects.prefetch_related("media_images", "bedrooms_images")
+        queryset = Property.objects.annotate(total_reviews=Count("reviews"),avg_rating=Avg("reviews__rating")).prefetch_related("media_images", "bedrooms_images")
 
         if user.is_authenticated:
             queryset = queryset.annotate(is_favorited=Exists(Favorite.objects.filter(property=OuterRef('pk'), user=user))).prefetch_related('favorited_by')
