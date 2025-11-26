@@ -418,40 +418,175 @@ from list_vila.models import ContectUs
 from django.db.models.functions import TruncMonth
 
 
+# class AnalyticsSummaryView(APIView):
+#     """
+#     Fully optimized analytics summary.
+#     Supports:
+#     - ?range=7d | month | 6m | year | 1y | custom days (e.g. range=90)
+#     - or ?start=YYYY-MM-DD&end=YYYY-MM-DD
+#     """
+
+#     def get(self, request):
+#         today = now().date()
+
+#         start_param = request.GET.get("start")
+#         end_param = request.GET.get("end")
+
+#         if start_param and end_param:
+#             try:
+#                 start_date = date.fromisoformat(start_param)
+#                 end_date = date.fromisoformat(end_param)
+#             except:
+#                 return Response({"error": "Use YYYY-MM-DD for start & end"}, status=400)
+
+#         else:
+
+#             range_type = request.GET.get("range", "7d")
+
+#             if range_type == "7d":
+#                 start_date = today - timedelta(days=7)
+#             elif range_type == "month":
+#                 start_date = today.replace(day=1)
+#             elif range_type == "6m":
+#                 start_date = today - timedelta(days=180)
+#             elif range_type == "year":
+#                 start_date = today.replace(month=1, day=1)
+#             elif range_type == "1y":
+#                 start_date = today - timedelta(days=365)
+#             elif range_type.isdigit():
+#                 start_date = today - timedelta(days=int(range_type))
+#             else:
+#                 start_date = today - timedelta(days=7)
+
+#             end_date = today
+
+#         analytics_qs = DailyAnalytics.objects.filter(
+#             date__gte=start_date, date__lte=end_date
+#         )
+
+#         totals = analytics_qs.aggregate(
+#             total_views=Sum("views"),
+#             total_downloads=Sum("downloads"),
+#             total_bookings=Sum("bookings")
+#         )
+
+#         total_inquiries = ContectUs.objects.filter(
+#             created_at__date__gte=start_date,
+#             created_at__date__lte=end_date
+#         ).count()
+
+  
+#         villas_type_count = dict(
+#             Property.objects.values("listing_type")
+#             .annotate(total=Count("id"))
+#             .values_list("listing_type", "total")
+#         )
+
+
+#         monthly_stats = (
+#             analytics_qs
+#             .annotate(month=TruncMonth("date"))
+#             .values("month")
+#             .annotate(
+#                 views=Sum("views"),
+#                 downloads=Sum("downloads"),
+#                 bookings=Sum("bookings")
+#             )
+#             .order_by("month")
+#         )
+
+
+#         monthly_inquiries = (
+#             ContectUs.objects.filter(
+#                 created_at__date__gte=start_date,
+#                 created_at__date__lte=end_date
+#             )
+#             .annotate(month=TruncMonth("created_at"))
+#             .values("month")
+#             .annotate(inquiries=Count("id"))
+#             .order_by("month")
+#         )
+
+#         inquiry_map = {m["month"]: m["inquiries"] for m in monthly_inquiries}
+
+#         performance_overview = []
+#         for m in monthly_stats:
+#             month = m["month"]
+#             performance_overview.append({
+#                 "month": month.strftime("%Y-%m"),
+#                 "views": m["views"],
+#                 "downloads": m["downloads"],
+#                 "bookings": m["bookings"],
+#                 "inquiries": inquiry_map.get(month, 0),
+#             })
+
+#         agents_analytics = (
+#             User.objects.filter(role="agent")
+#             .annotate(
+#                 total_properties=Count("assigned_villas", distinct=True),
+#                 total_views=Sum("assigned_villas__daily_analytics__views"),
+#                 total_downloads=Sum("assigned_villas__daily_analytics__downloads"),
+#                 total_bookings=Sum("assigned_villas__daily_analytics__bookings"),
+#             )
+#             .values(
+#                 "id", "name", "total_properties",
+#                 "total_views", "total_downloads", "total_bookings"
+#             )
+#         )
+
+
+#         return Response({
+#             "start_date": start_date,
+#             "end_date": end_date,
+
+#             "totals": {
+#                 "views": totals["total_views"] or 0,
+#                 "downloads": totals["total_downloads"] or 0,
+#                 "bookings": totals["total_bookings"] or 0,
+#                 "inquiries": total_inquiries,
+#             },
+
+#             "villas_type_count": villas_type_count,
+
+#             "monthly_performance": performance_overview,
+
+#             "agents": list(agents_analytics),
+#         })
+
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncDay, TruncMonth
+from datetime import date, timedelta
+from django.utils.timezone import now
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+
 class AnalyticsSummaryView(APIView):
-    """
-    Fully optimized analytics summary.
-    Supports:
-    - ?range=7d | month | 6m | year | 1y | custom days (e.g. range=90)
-    - or ?start=YYYY-MM-DD&end=YYYY-MM-DD
-    """
 
     def get(self, request):
+
         today = now().date()
 
+        # --- RANGE OR CUSTOM DATE ---
         start_param = request.GET.get("start")
         end_param = request.GET.get("end")
+        range_type = request.GET.get("range", "7d")
 
         if start_param and end_param:
-            try:
-                start_date = date.fromisoformat(start_param)
-                end_date = date.fromisoformat(end_param)
-            except:
-                return Response({"error": "Use YYYY-MM-DD for start & end"}, status=400)
-
+            start_date = date.fromisoformat(start_param)
+            end_date = date.fromisoformat(end_param)
         else:
-
-            range_type = request.GET.get("range", "7d")
-
             if range_type == "7d":
                 start_date = today - timedelta(days=7)
+            elif range_type == "30d":
+                start_date = today - timedelta(days=30)
+            elif range_type == "90d":
+                start_date = today - timedelta(days=90)
             elif range_type == "month":
                 start_date = today.replace(day=1)
             elif range_type == "6m":
                 start_date = today - timedelta(days=180)
-            elif range_type == "year":
-                start_date = today.replace(month=1, day=1)
-            elif range_type == "1y":
+            elif range_type in ["1y", "year"]:
                 start_date = today - timedelta(days=365)
             elif range_type.isdigit():
                 start_date = today - timedelta(days=int(range_type))
@@ -460,70 +595,110 @@ class AnalyticsSummaryView(APIView):
 
             end_date = today
 
+        range_days = (end_date - start_date).days
+
+        # Grouping logic => ≤60 days = daily, otherwise monthly
+        is_monthly = range_days > 60
+
+        # --- BASE QS ---
         analytics_qs = DailyAnalytics.objects.filter(
             date__gte=start_date, date__lte=end_date
         )
 
+        # --- TOTALS ---
         totals = analytics_qs.aggregate(
             total_views=Sum("views"),
             total_downloads=Sum("downloads"),
-            total_bookings=Sum("bookings")
+            total_bookings=Sum("bookings"),
         )
 
         total_inquiries = ContectUs.objects.filter(
             created_at__date__gte=start_date,
-            created_at__date__lte=end_date
+            created_at__date__lte=end_date,
         ).count()
 
-  
-        villas_type_count = dict(
-            Property.objects.values("listing_type")
-            .annotate(total=Count("id"))
-            .values_list("listing_type", "total")
-        )
-
-
-        monthly_stats = (
-            analytics_qs
-            .annotate(month=TruncMonth("date"))
-            .values("month")
-            .annotate(
-                views=Sum("views"),
-                downloads=Sum("downloads"),
-                bookings=Sum("bookings")
+        # --- PERFORMANCE (Daily or Monthly) ---
+        if not is_monthly:
+            # DAY-WISE
+            performance = (
+                analytics_qs
+                .annotate(day=TruncDay("date"))
+                .values("day")
+                .annotate(
+                    total_views=Sum("views"),
+                    total_downloads=Sum("downloads"),
+                    total_bookings=Sum("bookings"),
+                )
+                .order_by("day")
             )
-            .order_by("month")
-        )
 
-
-        monthly_inquiries = (
-            ContectUs.objects.filter(
-                created_at__date__gte=start_date,
-                created_at__date__lte=end_date
+            # inquiries daily
+            inquiry_qs = (
+                ContectUs.objects.filter(
+                    created_at__date__gte=start_date,
+                    created_at__date__lte=end_date,
+                )
+                .annotate(day=TruncDay("created_at"))
+                .values("day")
+                .annotate(inquiries=Count("id"))
             )
-            .annotate(month=TruncMonth("created_at"))
-            .values("month")
-            .annotate(inquiries=Count("id"))
-            .order_by("month")
-        )
 
-        inquiry_map = {m["month"]: m["inquiries"] for m in monthly_inquiries}
+            inquiry_map = {i["day"]: i["inquiries"] for i in inquiry_qs}
 
-        performance_overview = []
-        for m in monthly_stats:
-            month = m["month"]
-            performance_overview.append({
-                "month": month.strftime("%Y-%m"),
-                "views": m["views"],
-                "downloads": m["downloads"],
-                "bookings": m["bookings"],
-                "inquiries": inquiry_map.get(month, 0),
-            })
+            performance_list = []
+            for p in performance:
+                day_name = p["day"].strftime("%a")  # Mon, Tue, Wed
+                performance_list.append({
+                    "name": day_name,
+                    "views": p["total_views"] or 0,
+                    "downloads": p["total_downloads"] or 0,
+                    "bookings": p["total_bookings"] or 0,
+                    "inquiries": inquiry_map.get(p["day"], 0),
+                })
 
-        agents_analytics = (
+        else:
+            # MONTH-WISE
+            performance = (
+                analytics_qs
+                .annotate(month=TruncMonth("date"))
+                .values("month")
+                .annotate(
+                    total_views=Sum("views"),
+                    total_downloads=Sum("downloads"),
+                    total_bookings=Sum("bookings")
+                )
+                .order_by("month")
+            )
+
+            # inquiries month-wise
+            inquiry_qs = (
+                ContectUs.objects.filter(
+                    created_at__date__gte=start_date,
+                    created_at__date__lte=end_date
+                )
+                .annotate(month=TruncMonth("created_at"))
+                .values("month")
+                .annotate(inquiries=Count("id"))
+            )
+
+            inquiry_map = {i["month"]: i["inquiries"] for i in inquiry_qs}
+
+            performance_list = []
+            for p in performance:
+                label = p["month"].strftime("%b")  # Jan, Feb, Mar
+                performance_list.append({
+                    "name": label,
+                    "views": p["total_views"] or 0,
+                    "downloads": p["total_downloads"] or 0,
+                    "bookings": p["total_bookings"] or 0,
+                    "inquiries": inquiry_map.get(p["month"], 0),
+                })
+
+        # --- AGENT ANALYTICS ---
+        agents = (
             User.objects.filter(role="agent")
             .annotate(
-                total_properties=Count("assigned_villas", distinct=True),
+                total_properties=Count("assigned_villas"),
                 total_views=Sum("assigned_villas__daily_analytics__views"),
                 total_downloads=Sum("assigned_villas__daily_analytics__downloads"),
                 total_bookings=Sum("assigned_villas__daily_analytics__bookings"),
@@ -534,8 +709,8 @@ class AnalyticsSummaryView(APIView):
             )
         )
 
-
         return Response({
+            "range": range_type,
             "start_date": start_date,
             "end_date": end_date,
 
@@ -546,13 +721,9 @@ class AnalyticsSummaryView(APIView):
                 "inquiries": total_inquiries,
             },
 
-            "villas_type_count": villas_type_count,
-
-            "monthly_performance": performance_overview,
-
-            "agents": list(agents_analytics),
+            "performance": performance_list,
+            "agents": list(agents),
         })
-
 
 
 auditlog.register(Property)
