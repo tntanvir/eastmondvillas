@@ -1,0 +1,627 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Customer Inquiry</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f1f3f8;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #1e293b;
+        }
+
+        .wrapper {
+            width: 100%;
+            padding: 40px 15px;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+            text-align: center;
+            padding: 50px 30px;
+        }
+
+        .header-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            margin-top: 10px;
+            font-size: 14px;
+            letter-spacing: 1.5px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        /* Content */
+        .content {
+            padding: 40px 35px;
+        }
+
+        .alert {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #ffffff;
+            padding: 18px 22px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .alert span {
+            font-size: 26px;
+            margin-right: 15px;
+        }
+
+        .alert strong {
+            display: block;
+            font-size: 17px;
+        }
+
+        .alert small {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Card */
+        .card {
+            background: #f8f9ff;
+            border-radius: 18px;
+            padding: 30px;
+            border: 1px solid #e5e9ff;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #dde3ff;
+            padding-bottom: 18px;
+        }
+
+        .avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-right: 15px;
+            color: #fff;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .card-header p {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Info rows */
+        .info {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            border: 1px solid #e5e9ff;
+        }
+
+        .info-icon {
+            font-size: 20px;
+            margin-right: 14px;
+        }
+
+        .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+        }
+
+        .info-value {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .info-value a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        /* Message */
+        .message {
+            margin-top: 25px;
+            background: #ffffff;
+            padding: 22px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .message-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .message-content {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #475569;
+            white-space: pre-wrap;
+        }
+
+        /* Signature */
+        .signature {
+            margin-top: 40px;
+            border-top: 1px dashed #c7d2fe;
+            padding-top: 25px;
+        }
+
+        .team-name {
+            font-weight: 700;
+            font-size: 17px;
+            color: #667eea;
+        }
+
+        /* Footer */
+        .footer {
+            background: #0f2027;
+            color: #ffffff;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 13px;
+        }
+
+        .footer span {
+            display: block;
+            margin-top: 10px;
+            font-weight: 600;
+            opacity: 0.95;
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="container">
+
+            <div class="header">
+                <div class="header-icon">🏡</div>
+                <h1>EASTMOND VILLAS</h1>
+                <p>Premium Living Experience</p>
+            </div>
+
+            <div class="content">
+
+                <div class="alert">
+                    <span>🔔</span>
+                    <div>
+                        <strong>New Customer Inquiry</strong>
+                        <small>You have received a new contact request</small>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="avatar">👤</div>
+                        <div>
+                            <h3>Contact Details</h3>
+                            <p>Customer Information</p>
+                        </div>
+                    </div>
+
+                    <div class="info">
+                        <div class="info-icon">👤</div>
+                        <div>
+                            <div class="info-label">Full Name</div>
+                            <div class="info-value">{{ name }}</div>
+                        </div>
+                    </div>
+
+                    <div class="info">
+                        <div class="info-icon">📧</div>
+                        <div>
+                            <div class="info-label">Email Address</div>
+                            <div class="info-value">
+                                <a href="mailto:{{ email }}">{{ email }}</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info">
+                        <div class="info-icon">📱</div>
+                        <div>
+                            <div class="info-label">Phone Number</div>
+                            <div class="info-value">
+                                <a href="tel:{{ phone }}">{{ phone }}</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="message">
+                        <div class="message-title">Customer Message</div>
+                        <div class="message-content">{{ message }}</div>
+                    </div>
+                </div>
+
+                <div class="signature">
+                    <p>Best regards,</p>
+                    <p class="team-name">Eastmond Villas Team</p>
+                </div>
+
+            </div>
+
+            <div class="footer">
+                © {% now "Y" %} Eastmond Villas. All rights reserved.
+                <span>Making your living experience extraordinary</span>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>New Customer Inquiry</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f1f3f8;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #1e293b;
+        }
+
+        .wrapper {
+            width: 100%;
+            padding: 40px 15px;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #ffffff;
+            text-align: center;
+            padding: 50px 30px;
+        }
+
+        .header-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header p {
+            margin-top: 10px;
+            font-size: 14px;
+            letter-spacing: 1.5px;
+            opacity: 0.9;
+            text-transform: uppercase;
+        }
+
+        /* Content */
+        .content {
+            padding: 40px 35px;
+        }
+
+        .alert {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #ffffff;
+            padding: 18px 22px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .alert span {
+            font-size: 26px;
+            margin-right: 15px;
+        }
+
+        .alert strong {
+            display: block;
+            font-size: 17px;
+        }
+
+        .alert small {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Card */
+        .card {
+            background: #f8f9ff;
+            border-radius: 18px;
+            padding: 30px;
+            border: 1px solid #e5e9ff;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #dde3ff;
+            padding-bottom: 18px;
+        }
+
+        .avatar {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            margin-right: 15px;
+            color: #fff;
+        }
+
+        .card-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .card-header p {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Info rows */
+        .info {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            border: 1px solid #e5e9ff;
+        }
+
+        .info-icon {
+            font-size: 20px;
+            margin-right: 14px;
+        }
+
+        .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+        }
+
+        .info-value {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .info-value a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        /* Message */
+        .message {
+            margin-top: 25px;
+            background: #ffffff;
+            padding: 22px;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .message-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+
+        .message-content {
+            font-size: 15px;
+            line-height: 1.7;
+            color: #475569;
+            white-space: pre-wrap;
+        }
+
+        /* Signature */
+        .signature {
+            margin-top: 40px;
+            border-top: 1px dashed #c7d2fe;
+            padding-top: 25px;
+        }
+
+        .team-name {
+            font-weight: 700;
+            font-size: 17px;
+            color: #667eea;
+        }
+
+        /* Footer */
+        .footer {
+            background: #0f2027;
+            color: #ffffff;
+            text-align: center;
+            padding: 30px 20px;
+            font-size: 13px;
+        }
+
+        .footer span {
+            display: block;
+            margin-top: 10px;
+            font-weight: 600;
+            opacity: 0.95;
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 30px 20px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="container">
+
+            <div class="header">
+                <div class="header-icon">🏡</div>
+                <h1>EASTMOND VILLAS</h1>
+                <p>Premium Living Experience</p>
+            </div>
+
+            <div class="content">
+
+                <div class="alert">
+                    <span>🔔</span>
+                    <div>
+                        <strong>New Customer Inquiry</strong>
+                        <small>You have received a new contact request</small>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="avatar">👤</div>
+                        <div>
+                            <h3>Contact Details</h3>
+                            <p>Customer Information</p>
+                        </div>
+                    </div>
+
+                    <div class="info">
+                        <div class="info-icon">👤</div>
+                        <div>
+                            <div class="info-label">Full Name</div>
+                            <div class="info-value">{{ name }}</div>
+                        </div>
+                    </div>
+
+                    <div class="info">
+                        <div class="info-icon">📧</div>
+                        <div>
+                            <div class="info-label">Email Address</div>
+                            <div class="info-value">
+                                <a href="mailto:{{ email }}">{{ email }}</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info">
+                        <div class="info-icon">📱</div>
+                        <div>
+                            <div class="info-label">Phone Number</div>
+                            <div class="info-value">
+                                <a href="tel:{{ phone }}">{{ phone }}</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="message">
+                        <div class="message-title">Customer Message</div>
+                        <div class="message-content">{{ message }}</div>
+                    </div>
+                </div>
+
+                <div class="signature">
+                    <p>Best regards,</p>
+                    <p class="team-name">Eastmond Villas Team</p>
+                </div>
+
+            </div>
+
+            <div class="footer">
+                © {% now "Y" %} Eastmond Villas. All rights reserved.
+                <span>Making your living experience extraordinary</span>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>
