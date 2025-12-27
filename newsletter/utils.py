@@ -3,6 +3,7 @@ from django.conf import settings
 
 
 def send_newsletter_email(subject, message, recipient_list):
+    print("Utils")
     send_mail(
         subject=subject,
         message=message,

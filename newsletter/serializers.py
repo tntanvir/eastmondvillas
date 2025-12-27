@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import NewsLetter
 from accounts.models import User
-from villas.models import VilaListing
+from villas.models import Property
 
 
 class NewsLetterSerializer(serializers.ModelSerializer):
@@ -10,7 +10,7 @@ class NewsLetterSerializer(serializers.ModelSerializer):
         many=True
     )
     property = serializers.PrimaryKeyRelatedField(
-        queryset=VilaListing.objects.all()
+        queryset=Property.objects.all()
     )
 
     class Meta:

@@ -1,3 +1,7 @@
 
 # for run server use this command-
         daphne -p 9000 eastmondvilla.asgi:application
+for run celery use this command-
+        celery -A eastmondvilla worker -l info 
+for run redis use this command-
+        redis-server --port 6380
