@@ -29,6 +29,7 @@ urlpatterns = [
     path('api/announcements/', include('announcements.urls')),
     path('api/resources/', include('resources.urls')),
     path('api/activity-log/', include('activityLog.urls')),
+    path('api/newsletter/', include('newsletter.urls')),
 
 
     path('schema/', SpectacularAPIView.as_view(), name='schema'),  # The OpenAPI schema

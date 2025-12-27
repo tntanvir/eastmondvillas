@@ -6,6 +6,9 @@ from .models import VilaListing,ContectUs
 from .serializers import VilaListingSerializer,ContectUsSerializer
 from notifications.utils import notify_admins_and_managers
 
+from django.conf import settings
+from .utils import send_email
+
 # Create your views here.
 
 
@@ -64,6 +67,18 @@ class ContactUsView(APIView):
             serializer.save()
 
             notify_admins_and_managers("New Contact Us", data=serializer.data)
+            
+            # Send Email
+            try:
+                subject = f"New Contact Us Message from {serializer.data.get('name')}"
+                name = f"Name: {serializer.data.get('name')}"
+                email = f"Email: {serializer.data.get('email')}"
+                phone=f"Phone: {serializer.data.get('phone')}"
+                message=f"Message: {serializer.data.get('message')}"
+                
+                send_email(subject, name, email, phone, message)
+            except Exception as e:
+                print(f"Error sending email: {e}")
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -83,3 +98,4 @@ class ContactUsView(APIView):
             contect.delete()
             return Response({"message": "Contect deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
         return Response({"message": "You do not have permission to perform this action."}, status=status.HTTP_403_FORBIDDEN)
+
